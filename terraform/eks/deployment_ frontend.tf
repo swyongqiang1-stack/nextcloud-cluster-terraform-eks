@@ -1,0 +1,45 @@
+resource "kubernetes_deployment" "frontend" {
+  metadata {
+    name = "frontend"
+    namespace = "dev"
+    labels = {
+      app = "frontend"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        app = "frontend"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "frontend"
+        }
+      }
+
+      spec {
+        container {
+          image = "nicolaka/netshoot"
+          name  = "frontend"
+
+          resources {
+            limits = {
+              cpu    = "0.5"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "50Mi"
+            }
+          }
+          }
+        }
+      }
+    }
+}

@@ -14,3 +14,7 @@ resource "aws_eks_addon" "dns" {
 }
 
 
+resource "aws_eks_addon" "csi" {
+  cluster_name = aws_eks_cluster.e_cm.name
+  addon_name   = "aws-ebs-csi-driver"
+}
