@@ -25,7 +25,7 @@ resource "kubernetes_deployment" "frontend" {
 
       spec {
         container {
-          image = "nicolaka/netshoot"
+          image = "nginx:alpine"
           name  = "frontend"
 
           resources {
@@ -38,6 +38,9 @@ resource "kubernetes_deployment" "frontend" {
               memory = "50Mi"
             }
           }
+          port {
+            container_port = 80
+          } 
           }
         }
       }

@@ -43,3 +43,5 @@ resource "kubernetes_deployment" "order-api" {
       }
     }
 }
+
+
