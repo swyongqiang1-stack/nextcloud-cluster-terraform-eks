@@ -15,10 +15,10 @@ resource "helm_release" "ingress_nginx" {
 }
 
 
-resource "kubernetes_ingress_v1" "frontend" {
+resource "kubernetes_ingress_v1" "nextcloud" {
   wait_for_load_balancer = true
   metadata {
-    name = "frontend"
+    name = "nextcloud"
     namespace = "dev"
   }
   spec {
@@ -29,7 +29,7 @@ resource "kubernetes_ingress_v1" "frontend" {
           path = "/*"
           backend {
             service {
-              name = "frontend"
+              name = "nextcloud"
               port {
                 number = 80
               }
