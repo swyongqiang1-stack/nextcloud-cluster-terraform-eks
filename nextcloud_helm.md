@@ -1,37 +1,46 @@
+## Nextcloud Architecture
+
+```text
 Internet
    │
+   ▼
 ingress-nginx
    │
+   ▼
 Nextcloud (Helm)
-   ├── App PVC ──────── EBS gp3
-   ├── Data PVC ─────── EBS gp3
+   ├── App PVC ─────────── EBS gp3
+   ├── Data PVC ────────── EBS gp3
    │
    └── PostgreSQL
           │
           ├── Dedicated DB Node Group
-          │   ├── Label / nodeSelector
-          │   └── Taint / Toleration
+          │      ├── Label / nodeSelector
+          │      └── Taint / Toleration
           │
-          └── DB PVC ── EBS gp3
+          └── DB PVC ───── EBS gp3
+
 
 AWS Secrets Manager
         │
+        ▼
        ESO
         │
- Kubernetes Secrets
+        ▼
+Kubernetes Secrets
         │
    ┌────┴────┐
+   ▼         ▼
 Nextcloud  PostgreSQL
+```
 
-
-
+## Key Design Decisions
 
 - PostgreSQL dependency/subchart
-- 数据库专用节点
-- 调度隔离
-- EBS 持久化
-- Nextcloud 与 PostgreSQL 分离存储
-- AWS Secrets Manager
-- ESO
-- Ingress
-- Terraform 管理 Helm release
+- Dedicated database node group
+- Scheduling isolation with labels, nodeSelector, taints and tolerations
+- EBS-backed persistent storage
+- Separate Nextcloud application, data and PostgreSQL storage
+- AWS Secrets Manager for credentials
+- External Secrets Operator (ESO)
+- ingress-nginx integration
+- Terraform-managed Helm release
