@@ -40,6 +40,7 @@ resource "helm_release" "nextcloud" {
     })
   ]
 
+#postgresql config
 
   set {
     name  = "internalDatabase.enabled"
@@ -122,7 +123,7 @@ resource "helm_release" "nextcloud" {
   }
 
 
-
+#next secret config
 
   set {
     name  = "nextcloud.existingSecret.enabled"
@@ -144,7 +145,7 @@ resource "helm_release" "nextcloud" {
     value = "password"
   }
 
-
+##next persistence
 
 
   set {
@@ -184,3 +185,25 @@ resource "helm_release" "nextcloud" {
   }
 }
 
+#redis config
+
+  set {
+    name = "redis.enabled"
+    value = "true"
+  }
+
+  set {
+    name = "redis.auth.enabled"
+    
+  }
+  set {
+    name = "redis.auth.existingSecret"
+  }
+
+  set {
+    name = "redis.auth.existingSecretPasswordKey"
+  }
+
+  set {
+    name = "redis.global.storageClass"
+  }
