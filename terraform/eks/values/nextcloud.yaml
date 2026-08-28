@@ -1,3 +1,5 @@
+replicaCount: 3
+
 internalDatabase:
   enabled: false
 
@@ -69,3 +71,13 @@ nextcloud:
     secretName: nextcloud-secret
     usernameKey: username
     passwordKey: password
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  podSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        Drop: ALL

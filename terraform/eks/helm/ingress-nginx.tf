@@ -9,6 +9,8 @@ resource "helm_release" "ingress_nginx" {
     file("${path.module}/values/ingress_nginx.yaml")
   ]
 
+}
+
 resource "kubernetes_ingress_v1" "nextcloud" {
   wait_for_load_balancer = true
   metadata {

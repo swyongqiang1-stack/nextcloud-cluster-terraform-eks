@@ -23,9 +23,9 @@ resource "kubernetes_namespace" "prod" {
 resource "kubernetes_namespace" "ingress-nginx" {
   metadata {
     labels = {
-      "pod-security.kubernetes.io/enforce" = "restricted"
-      "pod-security.kubernetes.io/warn" = "v1.31"
       "name" = "ingress-nginx"
+      "pod-security.kubernetes.io/enforce" = "baseline"
+      "pod-security.kubernetes.io/warn" = "restricted"
       "kubernetes.io/metadata.name" = "ingress-nginx"
     }
     name = "ingress-nginx"
