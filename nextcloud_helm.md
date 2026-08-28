@@ -1,35 +1,37 @@
 ## Nextcloud Architecture
 
+```text
 Internet
-   │
-   ▼
+   |
+   v
 ingress-nginx
-   │
-   ▼
+   |
+   v
 Nextcloud (Helm, multiple replicas)
-   │
-   ├── Shared App/Data Storage ───── EFS
-   │
-   └── PostgreSQL
-          │
-          ├── Dedicated DB Node Group
-          │      ├── Label / nodeSelector
-          │      └── Taint / Toleration
-          │
-          └── DB PVC ─────────────── EBS gp3
+   |
+   +-- Shared Persistent Storage --> Amazon EFS
+   |
+   +-- PostgreSQL
+          |
+          +-- Dedicated DB Node Group
+          |      +-- Label / nodeSelector
+          |      +-- Taint / Toleration
+          |
+          +-- DB PVC --> EBS gp3
 
 
 AWS Secrets Manager
-        │
-        ▼
-       ESO
-        │
-        ▼
+        |
+        v
+External Secrets Operator (ESO)
+        |
+        v
 Kubernetes Secrets
-        │
-   ┌────┴────┐
-   ▼         ▼
-Nextcloud  PostgreSQL
+        |
+        +--> Nextcloud
+        |
+        +--> PostgreSQL
+```
 
 ## Key Design Decisions
 
