@@ -1,4 +1,8 @@
 replicaCount: 3
+deploymentLabels:
+  app: nextcloud
+podLabels:
+  app: nextcloud
 
 internalDatabase:
   enabled: false
@@ -18,6 +22,7 @@ externalDatabase:
 postgresql:
   enabled: true
 
+
   global:
     postgresql:
       auth:
@@ -31,6 +36,10 @@ postgresql:
   primary:
     nodeSelector:
       workload: database
+    labels:
+      app: database
+    podLabels:
+      app: database
 
     tolerations:
       - key: workload
@@ -52,6 +61,18 @@ redis:
     enabled: true
     existingSecret: redis-secret
     existingSecretPasswordKey: password
+  networkPolicy:
+    enabled: true
+    ingressNSMatchLabels:
+      redis: external
+    ingressNSPodMatchLabels:
+      redis-client: true
+  replica:
+    podLabels:
+    app: redis
+  master:
+    podLabels:
+      app: redis
 
 persistence:
   enabled: true
