@@ -3,7 +3,7 @@ resource "helm_release" "external_secrets" {
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
   version          = "2.9.0"
-  namespace        = "monitoring"
+  namespace        = "external_secrets"
   create_namespace = true
 
   set {

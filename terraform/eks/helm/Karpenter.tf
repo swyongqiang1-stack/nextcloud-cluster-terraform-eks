@@ -3,13 +3,23 @@ resource "helm_release" "Karpenter" {
   repository       = "oci://public.ecr.aws/karpenter/karpenter"
   chart            = "karpenter"
   version          = "1.14.1"
-  namespace        = "karpenter"
+  namespace        = "kube-system"
   create_namespace = true
 
     set {
-        serviceAccount.annotations.eks\.amazonaws\.com/role-arn=""
+        name = "serviceAccount.annotations.eks.amazonaws.com/role-arn"
+        value = "karpenter"
  } 
+   set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
     set {
-        settings.clusterName = 
+        name = "settings.clusterName"
+        value = "nextcloud"
  }
+    set {
+        name = "settings.interruptionQueue"
+        value = "nextcloud"
+    }
 }

@@ -54,7 +54,7 @@ resource "aws_iam_role_policy" "external_secrets" {
 resource "kubernetes_service_account" "external_secrets" {
   metadata {
     name      = "external-secrets"   
-    namespace = "monitoring"                     
+    namespace = "external-secrets"                     
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn  
     }
