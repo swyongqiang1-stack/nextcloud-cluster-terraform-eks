@@ -7,7 +7,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name = "clusterName"
-    value = "e_cm"
+    value = "nextcloud"
   }
 
   set {

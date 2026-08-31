@@ -1,6 +1,6 @@
-resource "aws_eks_node_group" "e_cm" {
-  cluster_name    = aws_eks_cluster.e_cm.name
-  node_group_name = "e_cm"
+resource "aws_eks_node_group" "nextcloud" {
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  node_group_name = "nextcloud"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = module.vpc.private_subnet_ids
 
@@ -23,7 +23,7 @@ resource "aws_eks_node_group" "e_cm" {
 
 
 resource "aws_iam_role" "node" {
-  name = "eks-node-group-e_cm"
+  name = "eks-node-group-nextcloud"
 
   assume_role_policy = jsonencode({
     Statement = [{

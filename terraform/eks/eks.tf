@@ -1,5 +1,5 @@
-resource "aws_eks_cluster" "e_cm" {
-  name = "e-cm"
+resource "aws_eks_cluster" "nextcloud" {
+  name = "nextcloud"
 
   access_config {
     authentication_mode = "API"
@@ -18,7 +18,7 @@ resource "aws_eks_cluster" "e_cm" {
 }
 
 resource "aws_iam_role" "cluster" {
-  name = "eks-cluster-e_cm"
+  name = "eks-cluster-nextcloud"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
