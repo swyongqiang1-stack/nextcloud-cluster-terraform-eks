@@ -4,22 +4,38 @@ resource "helm_release" "Karpenter" {
   chart            = "karpenter"
   version          = "1.14.1"
   namespace        = "kube-system"
-  create_namespace = true
 
-    set {
-        name = "serviceAccount.annotations.eks.amazonaws.com/role-arn"
-        value = "karpenter"
- } 
+  set {
+    name = "instanceProfile"
+    value  = "KarpenterNodeInstanceProfile-nextcloud"
+  }
+  
    set {
     name  = "serviceAccount.create"
     value = "false"
-  }
+    }
+
+    set {
+        name = "serviceAccount.name"
+        value = "karpenter-controller"
+    }
+
     set {
         name = "settings.clusterName"
         value = "nextcloud"
- }
+    }
+
     set {
         name = "settings.interruptionQueue"
         value = "nextcloud"
+    }
+    set {
+        name = "serviceMonitor.enabled"
+        value = "true"
+    }
+
+    set {
+        name = "serviceMonitor.additionalLabels.release"
+        value = "prometheus"
     }
 }

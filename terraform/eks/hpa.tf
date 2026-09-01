@@ -1,6 +1,6 @@
-resource "kubernetes_horizontal_pod_autoscaler" "example" {
+resource "kubernetes_horizontal_pod_autoscaler" "nextcloud" {
   metadata {
-    name = "test"
+    name = "nextcloud"
   }
 
   spec {
@@ -9,56 +9,53 @@ resource "kubernetes_horizontal_pod_autoscaler" "example" {
 
     scale_target_ref {
       kind = "Deployment"
-      name = "MyApp"
+      name = "nextcloud"
     }
 
     metric {
-      type = "External"
-      external {
-        metric {
-          name = "latency"
-          selector {
-            match_labels = {
-              lb_name = "test"
-            }
-          }
-        }
+      type = "resource"
+      resource {
+        name = "cpu"
         target {
-          type  = "Value"
-          value = "100"
-        }
-
-        
-    behavior {
-      scale_down {
-        stabilization_window_seconds = 0
-        select_policy                = "Min"
-        policy {
-          period_seconds = 0
-          type           = "Pods"
-          value          = 1
-        }
-
-        policy {
-          period_seconds = 310
-          type           = "Percent"
-          value          = 100
+          type  = "Utilization"
+          value = "70"
         }
       }
+
+      }
+        
+    behavior {
       scale_up {
-        stabilization_window_seconds = 600
-        select_policy                = "Max"
+        stabilization_window_seconds = 0
+        select_policy                = "max"
         policy {
-          period_seconds = 180
+          period_seconds = 60
+          type           = "Pods"
+          value          = 4
+        }
+
+        policy {
+          period_seconds = 60
+          type           = "Percent"
+          value          = 50
+        }
+      }
+      
+      scale_down {
+        stabilization_window_seconds = 600
+        select_policy                = "min"
+        policy {
+          period_seconds = 60
           type           = "Percent"
           value          = 100
         }
         policy {
-          period_seconds = 600
-          type           = "Pods"
-          value          = 5
+          period_seconds = 60
+          type           = "pods"
+          value          = 3
+        }
         }
       }
     }
   }
-}
+
