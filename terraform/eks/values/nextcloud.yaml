@@ -4,75 +4,13 @@ deploymentLabels:
 podLabels:
   app: nextcloud
 
-internalDatabase:
-  enabled: false
-
-externalDatabase:
-  enabled: true
-  type: postgresql
-  host: nextcloud-postgresql:5432
-  database: nextcloud
-  user: nextcloud
-
-  existingSecret:
-    enabled: true
-    secretName: postgres-secret
-    passwordKey: password
-
-postgresql:
-  enabled: true
-
-
-  global:
-    postgresql:
-      auth:
-        username: nextcloud
-        database: nextcloud
-        existingSecret: postgres-secret
-        secretKeys:
-          adminPasswordKey: postgres-password
-          userPasswordKey: password
-
-  primary:
-    nodeSelector:
-      workload: database
-    labels:
-      app: database
-    podLabels:
-      app: database
-
-    tolerations:
-      - key: workload
-        operator: Equal
-        value: database
-        effect: NoSchedule
-
-    persistence:
-      enabled: true
-      storageClass: gp3-retain
-      size: 100Gi
-
-  metrics:
-    enabled: true
-
-redis:
-  enabled: true
-  auth:
-    enabled: true
-    existingSecret: redis-secret
-    existingSecretPasswordKey: password
-  networkPolicy:
-    enabled: true
-    ingressNSMatchLabels:
-      redis: external
-    ingressNSPodMatchLabels:
-      redis-client: true
-  replica:
-    podLabels:
-    app: redis
-  master:
-    podLabels:
-      app: redis
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: nextcloud
+        topologyKey: kubernetes.io/hostname
 
 persistence:
   enabled: true
@@ -92,13 +30,96 @@ nextcloud:
     secretName: nextcloud-secret
     usernameKey: username
     passwordKey: password
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  podSecurityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        Drop: ALL
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+podSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    Drop: ALL
+
+internalDatabase:
+  enabled: false
+
+externalDatabase:
+  enabled: true
+  type: postgresql
+  host: nextcloud-postgresql:5432
+  database: nextcloud
+  user: nextcloud
+
+  existingSecret:
+    enabled: true
+    secretName: postgres-secret
+    passwordKey: password
+
+
+postgresql:
+  enabled: true
+  
+  global:
+    postgresql:
+      auth:
+        username: nextcloud
+        database: nextcloud
+        existingSecret: postgres-secret
+        secretKeys:
+          adminPasswordKey: postgres-password
+          userPasswordKey: password
+
+  primary:
+    nodeSelector:
+      workload: database
+    labels:
+      app: database
+    podLabels:
+      app: database
+      
+    podAntiAffinityPreset: hard
+    priorityClassName: high
+
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: database
+        effect: NoSchedule
+    
+
+  persistence:
+    enabled: true
+    storageClass: gp3-retain
+    size: 100Gi
+
+  metrics:
+    enabled: true
+
+
+
+redis:
+  enabled: true
+
+  auth:
+    enabled: true
+    existingSecret: redis-secret
+    existingSecretPasswordKey: password
+
+  networkPolicy:
+    enabled: true
+    ingressNSMatchLabels:
+      redis: external
+    ingressNSPodMatchLabels:
+      redis-client: true
+
+  replica:
+    podLabels:
+      app: redis
+
+  master:
+    podLabels:
+      app: redis
+    podAntiAffinityPreset: hard

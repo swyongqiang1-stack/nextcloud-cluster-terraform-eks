@@ -16,9 +16,13 @@ resource "kubernetes_ingress_v1" "nextcloud" {
   metadata {
     name = "nextcloud"
     namespace = "nextcloud"
+    annotations = {
+    "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
+    "alb.ingress.kubernetes.io/target-type" = "ip"
+}
   }
   spec {
-    ingress_class_name = "nginx"
+    ingress_class_name = "alb"
     rule {
       http {
         path {
