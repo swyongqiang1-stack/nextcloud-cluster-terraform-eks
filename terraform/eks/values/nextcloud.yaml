@@ -81,7 +81,7 @@ postgresql:
       app: database
       
     podAntiAffinityPreset: hard
-    priorityClassName: high
+    priorityClassName: high-priority
 
     tolerations:
       - key: workload
