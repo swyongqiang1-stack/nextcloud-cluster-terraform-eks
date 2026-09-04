@@ -23,13 +23,9 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
   name   = "AWSLoadBalancerControllerIAMPolicy"
-  policy = file("${path.module}/iam_policy.json")   
+  policy = file("${path.module}/iam_alb_policy.json")   
 }
 
-#https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.14.1/docs/install/iam_policy.json
-#权限文件放到当前目录。
-
-    #角色和权限策略挂在attachment
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
   role       = aws_iam_role.aws_load_balancer_controller.name
   policy_arn = aws_iam_policy.aws_load_balancer_controller.arn   

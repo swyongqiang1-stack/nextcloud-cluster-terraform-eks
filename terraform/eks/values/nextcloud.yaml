@@ -59,6 +59,16 @@ externalDatabase:
     passwordKey: password
 
 
+configs:
+  logging.config.php: |-
+    <?php
+    $CONFIG = array (
+      'log_type' => 'errorlog',
+      'loglevel' => 2
+    );
+
+
+
 postgresql:
   enabled: true
   

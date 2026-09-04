@@ -4,13 +4,15 @@ resource "helm_release" "Karpenter" {
   chart            = "karpenter"
   version          = "1.14.1"
   namespace        = "kube-system"
-
-  set {
+  depends_on = [
+    kubernetes_service_account.karpenter-controller
+  ]
+    set {
     name = "instanceProfile"
     value  = "KarpenterNodeInstanceProfile-nextcloud"
-  }
+    }
   
-   set {
+    set {
     name  = "serviceAccount.create"
     value = "false"
     }

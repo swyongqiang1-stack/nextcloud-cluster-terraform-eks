@@ -26,7 +26,7 @@ data "aws_eks_cluster" "nextcloud" {
 provider "helm" {
   kubernetes {
     host                   = data.aws_eks_cluster.nextcloud.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.e_cm.certificate_authority[0].data)
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.nextcloud.certificate_authority[0].data)
 
     exec {
       api_version = "client.authentication.k8s.io/v1beta1"
@@ -41,7 +41,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.nextcloud.certificate_authority[0].data)
   exec {
     api_version = "client.authentication.k8s.io/v1"
-    args        = ["eks", "get-token", "--cluster-name", data.aws_eks_cluster.e_cm.name]
+    args        = ["eks", "get-token", "--cluster-name", data.aws_eks_cluster.nextcloud.name]
     command     = "aws"
   }
 }

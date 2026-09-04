@@ -3,8 +3,10 @@ resource "helm_release" "ingress_nginx" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
-  create_namespace = true
-
+  depends_on = [
+    kubernetes_service_account.aws-load-balancer-controller
+  ]
+  
   values = [
     file("${path.module}/values/ingress_nginx.yaml")
   ]
