@@ -1,14 +1,44 @@
 # nextcloud-cluster-terraform-eks
 
-A reproducible reference implementation for deploying a small highly available Nextcloud cluster on AWS EKS using Terraform and Helm.
+A hands-on infrastructure project for deploying and operating a small Nextcloud platform on AWS EKS using Terraform, Kubernetes, and Helm.
 
-This project started from a simple question: how difficult is it to move a traditional single-server Nextcloud deployment into Kubernetes?
+This repository is also used as a cloud-native engineering lab. New Kubernetes and AWS components are introduced gradually, then integrated, tested, reviewed, and refined as the architecture evolves.
 
-At first, I expected the main task to be creating a Deployment with multiple replicas. In practice, a clustered Nextcloud setup requires several infrastructure layers to work together: shared storage, PostgreSQL persistence, Redis locking, ingress, AWS IAM, CSI drivers, secret management, and Kubernetes scheduling.
+The main goal is not simply to make Nextcloud run on Kubernetes, but to understand how infrastructure, storage, networking, IAM, scheduling, observability, backup, and application lifecycle interact in a real system.
 
-The goal of this repository is to provide a practical and understandable Nextcloud-on-EKS implementation that can be studied, reproduced, and adapted.
+---
+
+## Project Background
+
+This project started from a simple question:
+
+> How difficult is it to move a traditional single-server Nextcloud deployment into Kubernetes?
+
+At first, the main task appeared to be deploying several Nextcloud replicas.
+
+In practice, a stateful application such as Nextcloud requires multiple infrastructure layers to work together:
+
+- AWS networking
+- Amazon EKS
+- Kubernetes scheduling
+- persistent storage
+- PostgreSQL
+- Redis
+- ingress and load balancing
+- IAM and workload identity
+- secret management
+- autoscaling
+- logging and monitoring
+- backup and restore
+- failure testing
+
+The project is intentionally developed in stages so that each component can be studied, implemented, tested, and later reviewed as part of the complete system.
+
+---
 
 ## Architecture
+
+Current high-level architecture:
 
 ```text
                          Internet
@@ -17,32 +47,89 @@ The goal of this repository is to provide a practical and understandable Nextclo
                          AWS ALB
                             |
                             v
-                     ingress-nginx
+                   Nextcloud Service
                             |
-                            v
-                +-----------------------+
-                |   Nextcloud x 2-3     |
-                |      (Helm)           |
-                +-----------+-----------+
-                            |
-             +--------------+--------------+
-             |                             |
-             v                             v
-        Amazon EFS                       Redis
-     shared Nextcloud             cache / file locking
-         storage
-             |
-             |
-             +-----------------------------+
-                                           |
-                                           v
-                                  PostgreSQL StatefulSet
-                                           |
-                                           v
-                                        EBS gp3
+                    +-------+-------+
+                    |               |
+                    v               v
+             Nextcloud Pods        Redis
+              replicas 2-3       cache / locking
+                    |
+                    v
+               PostgreSQL
+                    |
+                    v
+                 EBS gp3
 ```
 
-AWS secret flow:
+Planned shared-storage architecture for multi-node Nextcloud replicas:
+
+```text
+Nextcloud Pod A ----+
+Nextcloud Pod B ----+---- Amazon EFS
+Nextcloud Pod C ----+
+```
+
+Amazon EFS + EFS CSI is planned for shared RWX application data.
+
+The current repository still contains EBS-backed Nextcloud persistence while the shared-storage design is being completed and validated.
+
+---
+
+## Infrastructure Architecture
+
+```text
+Terraform
+   |
+   +-- AWS VPC
+   |    |
+   |    +-- Public Subnets
+   |    +-- Private Subnets
+   |    +-- NAT Gateway
+   |
+   +-- Amazon EKS
+   |    |
+   |    +-- Managed Node Group
+   |    +-- Dedicated Database Node Group
+   |    +-- CoreDNS
+   |    +-- VPC CNI
+   |
+   +-- IAM / OIDC / IRSA
+   |
+   +-- Kubernetes Resources
+   |
+   +-- Helm Releases
+```
+
+The infrastructure is designed to be reproducible through Terraform rather than manually configured through the AWS console.
+
+---
+
+## AWS Workload Identity
+
+AWS-integrated workloads use IAM Roles for Service Accounts instead of long-lived AWS credentials.
+
+```text
+EKS OIDC Provider
+        |
+        +-- AWS Load Balancer Controller
+        |
+        +-- External Secrets Operator
+        |
+        +-- Karpenter
+        |
+        +-- Fluent Bit
+        |
+        +-- PostgreSQL Backup CronJob
+```
+
+Each workload receives its own ServiceAccount and IAM role.
+
+The goal is to avoid granting broad AWS permissions to the EKS worker-node IAM role.
+
+---
+
+## Secret Management
 
 ```text
 AWS Secrets Manager
@@ -53,26 +140,339 @@ External Secrets Operator
         v
 Kubernetes Secret
         |
-        +--> Nextcloud
+        +-- Nextcloud
         |
-        +--> PostgreSQL
+        +-- PostgreSQL
+        |
+        +-- Redis
 ```
 
-Infrastructure provisioning:
+Static AWS access keys are not intended to be stored inside Kubernetes manifests.
+
+External Secrets Operator retrieves application credentials from AWS Secrets Manager using IRSA.
+
+---
+
+## Application Layer
+
+The main application stack contains:
+
+- Nextcloud
+- PostgreSQL
+- Redis
+
+Nextcloud is deployed through the official Helm Chart.
+
+PostgreSQL is currently deployed inside Kubernetes for learning purposes.
+
+For a real production environment, a managed database service such as Amazon RDS would normally be considered.
+
+---
+
+## Storage Design
+
+### Nextcloud Storage
+
+Multiple Nextcloud replicas require access to shared application data.
+
+The planned design uses:
 
 ```text
-Terraform
-   |
-   +-- VPC / Subnets / NAT
-   +-- EKS
-   +-- Managed Node Groups
-   +-- Dedicated Database Node Group
-   +-- EBS CSI
-   +-- EFS CSI
-   +-- IAM / OIDC / IRSA
-   +-- AWS Load Balancer Controller
-   +-- Helm Releases
+Nextcloud replicas
+        |
+        v
+Amazon EFS
+        |
+        v
+EFS CSI Driver
+        |
+        v
+RWX PersistentVolume
 ```
+
+Amazon EFS supports `ReadWriteMany`, allowing application replicas running on different Kubernetes nodes to access the same storage.
+
+This part is still under development and validation.
+
+### PostgreSQL Storage
+
+PostgreSQL uses EBS gp3 block storage:
+
+```text
+PostgreSQL Pod
+      |
+      v
+     PVC
+      |
+      v
+  StorageClass
+      |
+      v
+    EBS gp3
+```
+
+EBS is suitable for the single-writer database workload used in this lab.
+
+---
+
+## Database Scheduling Isolation
+
+PostgreSQL is assigned to a dedicated database node group.
+
+Scheduling isolation uses:
+
+- Node labels
+- Taints
+- Tolerations
+- nodeSelector
+- Node Affinity
+- Pod Anti-Affinity
+- PriorityClass
+
+Example scheduling model:
+
+```text
+General Node Group
+   |
+   +-- Nextcloud
+   +-- Redis
+   +-- Controllers
+
+Database Node Group
+   |
+   +-- PostgreSQL
+```
+
+The goal is to reduce resource competition between application workloads and the database workload.
+
+---
+
+## Kubernetes Availability Controls
+
+The project currently experiments with several Kubernetes scheduling and availability mechanisms:
+
+- Horizontal Pod Autoscaler
+- Pod Anti-Affinity
+- PriorityClass
+- ResourceQuota
+- LimitRange
+- NetworkPolicy
+- Taints and Tolerations
+- Node Affinity
+- PodDisruptionBudget
+- Karpenter
+
+These components are added gradually and then tested together because individual Kubernetes resources can behave differently once scheduling, storage, networking, and autoscaling interact.
+
+---
+
+## Autoscaling
+
+### Horizontal Pod Autoscaler
+
+HPA is used to explore application-level scaling based on resource metrics.
+
+```text
+Application Load
+      |
+      v
+CPU / Metrics
+      |
+      v
+     HPA
+      |
+      v
+Deployment replicas
+```
+
+The HPA configuration is still being validated against the actual Nextcloud namespace and workload behavior.
+
+### Karpenter
+
+Karpenter is being introduced for infrastructure-level node provisioning.
+
+Target workflow:
+
+```text
+Pending Pod
+    |
+    v
+Karpenter
+    |
+    v
+NodePool
+    |
+    v
+EC2NodeClass
+    |
+    v
+New EC2 Node
+```
+
+The IAM roles, ServiceAccount, Helm deployment, and EC2NodeClass are being developed.
+
+NodePool provisioning and full autoscaling validation are still in progress.
+
+---
+
+## Network Security
+
+The project uses Kubernetes NetworkPolicy to move toward a default-deny network model.
+
+Target communication paths include:
+
+```text
+Internet
+   |
+   v
+AWS ALB
+   |
+   v
+Nextcloud
+   |
+   +-- PostgreSQL : 5432
+   |
+   +-- Redis : 6379
+   |
+   +-- DNS
+   |
+   +-- Required HTTPS endpoints
+```
+
+NetworkPolicy rules are reviewed whenever the ingress architecture changes because changing the traffic path can require corresponding security-policy changes.
+
+---
+
+## Pod Security
+
+The project also experiments with Kubernetes Pod Security controls.
+
+Current areas include:
+
+- Pod Security Admission
+- securityContext
+- runAsNonRoot
+- seccompProfile
+- capability restrictions
+- privilege-escalation restrictions
+
+The objective is to reduce unnecessary container privileges while maintaining application compatibility.
+
+---
+
+## Logging
+
+Fluent Bit is being introduced as the Kubernetes log collector.
+
+Target logging pipeline:
+
+```text
+Nextcloud / Container Logs
+          |
+          v
+   /var/log/containers
+          |
+          v
+     Fluent Bit
+       DaemonSet
+          |
+          v
+    CloudWatch Logs
+```
+
+Fluent Bit uses a dedicated Kubernetes ServiceAccount and IRSA role for CloudWatch permissions.
+
+Current CloudWatch output configuration includes:
+
+```text
+Fluent Bit
+    |
+    v
+CloudWatch Log Group
+    |
+    v
+fluent-bit-cloudwatch
+```
+
+The Fluent Bit integration is still being validated, including ServiceAccount ownership, namespace behavior, and CloudWatch permissions.
+
+---
+
+## Monitoring
+
+Prometheus and Grafana are used for metrics and platform visibility.
+
+Planned monitoring areas include:
+
+- Kubernetes node metrics
+- Pod CPU and memory usage
+- application availability
+- PostgreSQL metrics
+- Kubernetes controller behavior
+- HPA activity
+- Karpenter activity
+- infrastructure failure scenarios
+
+The project uses `kube-prometheus-stack` as the main monitoring stack.
+
+---
+
+## PostgreSQL Backup
+
+A Kubernetes CronJob is being developed for PostgreSQL backup.
+
+Target workflow:
+
+```text
+Kubernetes CronJob
+        |
+        v
+     pg_dump
+        |
+        v
+Compressed SQL Backup
+        |
+        v
+Temporary Volume
+        |
+        v
+AWS CLI Container
+        |
+        v
+       S3
+```
+
+The backup Pod uses its own ServiceAccount and IRSA role.
+
+The backup implementation is considered complete only after both backup and restore have been successfully validated.
+
+---
+
+## Helm Usage
+
+Helm is used to deploy third-party Kubernetes components.
+
+The project does not only use default Chart values. Chart structure and templates are inspected to understand how configuration is generated.
+
+Areas being studied include:
+
+- `values.yaml`
+- `.Values`
+- `with`
+- `include`
+- `tpl`
+- `_helpers.tpl`
+- `toYaml`
+- `nindent`
+- ServiceAccount configuration
+- Pod labels
+- affinity
+- persistence
+- securityContext
+
+The goal is to understand the relationship between Helm values and the Kubernetes manifests rendered by the Chart.
+
+---
 
 ## Tech Stack
 
@@ -83,134 +483,47 @@ Terraform
 | Kubernetes | Amazon EKS |
 | Application Deployment | Helm |
 | Application | Nextcloud |
-| Shared Storage | Amazon EFS + EFS CSI |
-| Database | PostgreSQL StatefulSet |
-| Database Storage | Amazon EBS gp3 + EBS CSI |
+| Database | PostgreSQL |
 | Cache / File Locking | Redis |
-| External Load Balancer | AWS ALB |
-| Kubernetes Ingress | ingress-nginx |
+| Database Storage | Amazon EBS gp3 |
+| Planned Shared Storage | Amazon EFS + EFS CSI |
+| Load Balancer | AWS Application Load Balancer |
+| AWS Controller | AWS Load Balancer Controller |
 | Secret Management | AWS Secrets Manager + External Secrets Operator |
-| AWS Workload Identity | IAM / OIDC / IRSA |
-| Scheduling Isolation | Taints, Tolerations, nodeSelector / node affinity |
-| Observability | Prometheus / Grafana |
+| Workload Identity | IAM / OIDC / IRSA |
+| Autoscaling | HPA + Karpenter |
+| Scheduling | Taints, Tolerations, Affinity, PriorityClass |
+| Network Security | Kubernetes NetworkPolicy |
+| Metrics | Prometheus / Grafana |
+| Logging | Fluent Bit + CloudWatch Logs |
+| Backup | Kubernetes CronJob + pg_dump + Amazon S3 |
 
-## Key Design Decisions
-
-### Shared storage for Nextcloud
-
-Multiple Nextcloud replicas must be able to access the same persistent application data.
-
-Amazon EFS is used as shared storage because it supports ReadWriteMany access across multiple Kubernetes nodes.
-
-```text
-Nextcloud Pod A ----+
-Nextcloud Pod B ----+---- Amazon EFS
-Nextcloud Pod C ----+
-```
-
-This differs from EBS, which is better suited to single-writer block-storage workloads such as PostgreSQL.
-
-### PostgreSQL uses EBS gp3
-
-PostgreSQL runs as a Kubernetes StatefulSet and stores its database files on an EBS gp3 volume.
-
-```text
-PostgreSQL StatefulSet
-        |
-        v
-       PVC
-        |
-        v
-     EBS gp3
-```
-
-The database uses block storage rather than EFS because PostgreSQL benefits from low-latency block I/O and does not require shared RWX storage.
-
-### Dedicated database node group
-
-PostgreSQL runs on a dedicated EKS managed node group.
-
-Scheduling isolation is implemented using:
-
-- Node labels
-- Taints
-- Tolerations
-- nodeSelector / node affinity
-
-This prevents database workloads from competing directly with general application workloads.
-
-### Redis for Nextcloud locking and caching
-
-Redis is used for Nextcloud transactional file locking and caching.
-
-In a multi-replica Nextcloud environment, all replicas must use the same Redis service so that file-lock state remains consistent across application pods.
-
-### No long-lived AWS credentials inside Kubernetes
-
-AWS Secrets Manager stores sensitive credentials.
-
-External Secrets Operator retrieves them using IRSA and generates Kubernetes Secrets.
-
-```text
-Secrets Manager
-      |
-      v
-     ESO
-      |
-      v
-Kubernetes Secret
-```
-
-No static AWS access keys are stored in the repository or application manifests.
-
-### AWS permissions through IRSA
-
-AWS-integrated Kubernetes components receive workload-specific IAM permissions using IAM Roles for Service Accounts.
-
-Separate IAM roles can be used for components such as:
-
-- AWS Load Balancer Controller
-- External Secrets Operator
-- EFS CSI Driver
-
-This avoids granting broad AWS permissions to the EKS node role.
-
-### ALB and ingress-nginx
-
-AWS Load Balancer Controller provisions the external Application Load Balancer.
-
-Traffic is forwarded into ingress-nginx, which handles Kubernetes-level routing toward Nextcloud.
-
-```text
-Internet
-   |
-   v
-AWS ALB
-   |
-   v
-ingress-nginx
-   |
-   v
-Nextcloud
-```
+---
 
 ## Kubernetes Resources
 
 | Resource | Purpose |
 |---|---|
-| Deployment | Nextcloud application replicas |
-| StatefulSet | PostgreSQL and Redis where required |
-| Service | Internal application and database connectivity |
-| Ingress | HTTP/HTTPS routing |
-| StorageClass | EBS / EFS dynamic storage provisioning |
-| PersistentVolumeClaim | Persistent application and database storage |
-| Secret | Credentials generated by ESO |
-| ResourceQuota | Namespace resource limits |
-| LimitRange | Default container resource limits |
-| PodDisruptionBudget | Protect application availability during voluntary disruption |
-| Pod Anti-Affinity | Spread Nextcloud replicas across nodes |
-| Taint / Toleration | Database node isolation |
-| nodeSelector / Affinity | Explicit database scheduling |
+| Deployment | Nextcloud application workload |
+| StatefulSet | Stateful PostgreSQL / Redis workloads |
+| Service | Internal Kubernetes networking |
+| Ingress | External HTTP routing |
+| StorageClass | Dynamic persistent-volume provisioning |
+| PersistentVolumeClaim | Application and database persistence |
+| Secret | Application credentials |
+| ServiceAccount | Kubernetes workload identity |
+| HorizontalPodAutoscaler | Application replica scaling |
+| ResourceQuota | Namespace resource control |
+| LimitRange | Default resource limits |
+| NetworkPolicy | Pod-level network restrictions |
+| PriorityClass | Scheduling priority |
+| Pod Anti-Affinity | Replica distribution across nodes |
+| Taint / Toleration | Dedicated database-node isolation |
+| Node Affinity | Workload placement |
+| CronJob | Scheduled PostgreSQL backup |
+| DaemonSet | Fluent Bit node-level log collection |
+
+---
 
 ## Repository Structure
 
@@ -221,85 +534,180 @@ Nextcloud
 │   │   └── vpc/
 │   │
 │   └── eks/
-│       ├── OIDC-IRSA/
-│       │   ├── iam_policy.json
+│       ├── OIDC-IAM/
+│       │   ├── oidc.tf
 │       │   ├── irsa_alb.tf
-│       │   └── irsa_eso.tf
+│       │   ├── irsa_eso.tf
+│       │   ├── irsa_karpenter.tf
+│       │   ├── irsa_fluent_bit.tf
+│       │   └── irsa_cronjob.tf
 │       │
 │       ├── helm/
 │       │   ├── aws_load_balancer_controller.tf
 │       │   ├── eso.tf
-│       │   ├── ingress-nginx.tf
-│       │   └── nextcloud_chart.tf
+│       │   ├── Karpenter.tf
+│       │   ├── fluent_bit.tf
+│       │   └── nextcloud.tf
 │       │
 │       ├── values/
+│       │   ├── fluent_bit.yaml
 │       │   ├── ingress_nginx.yaml
 │       │   └── nextcloud.yaml
 │       │
-│       ├── eks.tf
-│       ├── node.tf
-│       ├── database_node.tf
-│       ├── StorageClass.tf
-│       ├── namespace.tf
-│       ├── quota.tf
-│       ├── addon.tf
-│       ├── access.tf
-│       ├── state_backend.tf
-│       └── variables.tf
+│       ├── aws_eks.tf
+│       ├── aws_node_group.tf
+│       ├── aws_database_node.tf
+│       ├── aws_addon.tf
+│       ├── aws_acess.tf
+│       ├── eks_namespace.tf
+│       ├── eks_storageclass.tf
+│       ├── eks_networkpolicy.tf
+│       ├── eks_hpa.tf
+│       ├── eks_priorityclass.tf
+│       ├── eks_quota.tf
+│       ├── eks_cronjob.tf
+│       ├── main.tf
+│       ├── tf_state_backed.tf
+│       └── tf_variables.tf
 │
 ├── k8s/
+│   ├── karpenter_ec2nodeclass.yaml
+│   ├── secretstore.yaml
 │   └── nextcloud/
-│       ├── secretstore.yaml
-│       └── externalsecret.yaml
+│       └── secret/
 │
 ├── README.md
 └── nextcloud_helm.md
 ```
 
+Note:
+
+The Terraform directory structure is currently being refactored.
+
+Terraform does not automatically load `.tf` files recursively from child directories. The `OIDC-IAM` and `helm` directories therefore need to be either converted into proper Terraform modules or reorganized into the root module before the final deployment workflow is considered complete.
+
+---
+
 ## Current Scope
 
-The project focuses on a small Nextcloud cluster rather than a large enterprise platform.
+The project focuses on a small Nextcloud platform rather than a large enterprise Kubernetes platform.
 
-Core scope:
+Current areas of work include:
 
 - Terraform-managed AWS infrastructure
 - Amazon EKS
 - Multi-AZ networking
 - Managed Node Groups
-- Dedicated PostgreSQL node group
+- Dedicated PostgreSQL nodes
 - Nextcloud Helm deployment
-- Multiple Nextcloud replicas
-- Amazon EFS shared storage
-- PostgreSQL StatefulSet with EBS gp3
+- PostgreSQL persistence
 - Redis caching and file locking
-- AWS Load Balancer Controller
-- ingress-nginx
-- AWS Secrets Manager
+- IAM / OIDC / IRSA
 - External Secrets Operator
-- IAM / IRSA
-- Basic availability controls
-- Basic monitoring and failure testing
+- AWS Load Balancer Controller
+- Kubernetes NetworkPolicy
+- Pod Anti-Affinity
+- PriorityClass
+- HPA
+- Karpenter
+- Prometheus monitoring
+- Fluent Bit logging
+- CloudWatch Logs
+- PostgreSQL backup to S3
+- failure testing
+- backup and restore validation
 
-The project intentionally avoids unnecessary platform complexity such as service mesh, multi-region deployment, or large-scale database clustering.
+The project intentionally avoids unnecessary complexity such as:
+
+- service mesh
+- multi-region Kubernetes
+- large-scale database clustering
+- complex distributed storage platforms
+
+---
 
 ## Project Status
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | VPC, EKS, Managed Node Groups | 🚧 |
-| 2 | Dedicated database node group | 🚧 |
-| 3 | EBS CSI and PostgreSQL persistence | 🚧 |
-| 4 | AWS Load Balancer Controller | 🚧 |
-| 5 | ingress-nginx | 🚧 |
-| 6 | External Secrets Operator + IRSA | 🚧 |
-| 7 | Nextcloud Helm deployment | 🚧 |
-| 8 | Amazon EFS + EFS CSI | Planned |
-| 9 | Nextcloud multiple replicas | Planned |
-| 10 | Redis caching and file locking | Planned |
-| 11 | PDB and Pod Anti-Affinity | Planned |
-| 12 | Prometheus / Grafana monitoring | Planned |
-| 13 | Pod / Node failure testing | Planned |
-| 14 | Backup / restore validation | Planned |
+| 1 | VPC and EKS foundation | In Progress |
+| 2 | Managed Node Groups | In Progress |
+| 3 | Dedicated database node group | In Progress |
+| 4 | EBS CSI and PostgreSQL persistence | In Progress |
+| 5 | AWS Load Balancer Controller | In Progress |
+| 6 | External Secrets Operator and IRSA | In Progress |
+| 7 | Nextcloud Helm deployment | In Progress |
+| 8 | NetworkPolicy | In Progress |
+| 9 | Pod Anti-Affinity and PriorityClass | In Progress |
+| 10 | HPA | In Progress |
+| 11 | Karpenter | In Progress |
+| 12 | Fluent Bit and CloudWatch Logs | In Progress |
+| 13 | PostgreSQL backup CronJob | In Progress |
+| 14 | Amazon EFS + EFS CSI | Planned |
+| 15 | Multi-node Nextcloud RWX validation | Planned |
+| 16 | Prometheus / Grafana validation | Planned |
+| 17 | Pod and Node failure testing | Planned |
+| 18 | Backup and restore validation | Planned |
+| 19 | Upgrade and rollback testing | Planned |
+| 20 | Final architecture and code audit | Planned |
+
+---
+
+## Validation Goals
+
+The project is not considered complete simply because all resources can be created.
+
+A successful implementation should demonstrate the following:
+
+1. Terraform can initialize, validate, plan, and apply successfully.
+2. Kubernetes and Helm providers can connect to the EKS API correctly.
+3. Multiple Nextcloud replicas can run across different Kubernetes nodes.
+4. All Nextcloud replicas can access the same shared data.
+5. PostgreSQL data survives Pod recreation.
+6. Redis provides shared caching and transactional file locking.
+7. External traffic reaches the application through the intended ALB path.
+8. NetworkPolicy allows required traffic and blocks unintended traffic.
+9. Credentials are synchronized from AWS Secrets Manager through ESO.
+10. AWS-integrated workloads use workload-specific IRSA roles.
+11. HPA reacts correctly to application load.
+12. Karpenter can provision nodes for unschedulable workloads.
+13. Fluent Bit successfully delivers container logs to CloudWatch.
+14. PostgreSQL backups are successfully uploaded to S3.
+15. A PostgreSQL backup can be restored successfully.
+16. Removing one Nextcloud Pod does not make the service unavailable.
+17. Removing or replacing a worker node does not permanently break the application.
+18. Helm and Kubernetes configuration can survive controlled upgrade and rollback testing.
+
+---
+
+## Engineering Review Goals
+
+Before the project is considered complete, the repository will go through a final review covering:
+
+- Terraform module structure
+- Terraform provider configuration
+- Helm dependency ordering
+- Helm rendered manifests
+- namespace consistency
+- ServiceAccount ownership
+- IAM least privilege
+- OIDC / IRSA trust relationships
+- Secret names and Secret keys
+- storage access modes
+- scheduling and storage compatibility
+- ingress traffic path
+- NetworkPolicy behavior
+- HPA behavior
+- Karpenter provisioning
+- logging
+- backup
+- restore
+- failure recovery
+- documentation accuracy
+
+The purpose of this review is to identify integration issues that may not be visible when individual resources are developed separately.
+
+---
 
 ## Getting Started
 
@@ -317,6 +725,7 @@ The project intentionally avoids unnecessary platform complexity such as service
 cd terraform/eks
 
 terraform init
+terraform validate
 terraform plan
 terraform apply
 ```
@@ -325,8 +734,8 @@ terraform apply
 
 ```bash
 aws eks update-kubeconfig \
-  --region <aws-region> \
-  --name <cluster-name>
+  --region ap-southeast-1 \
+  --name nextcloud
 ```
 
 ### Verify
@@ -334,38 +743,85 @@ aws eks update-kubeconfig \
 ```bash
 kubectl get nodes
 kubectl get pods -A
+kubectl get svc -A
 kubectl get ingress -A
 kubectl get pvc -A
+kubectl get hpa -A
+kubectl get events -A --sort-by=.lastTimestamp
 ```
 
-## Validation Goals
-
-A deployment is considered successful when:
-
-1. Multiple Nextcloud replicas are running.
-2. All replicas access the same EFS-backed data.
-3. PostgreSQL survives Pod recreation with its EBS volume intact.
-4. Redis provides shared file locking and caching.
-5. External traffic reaches Nextcloud through ALB and ingress-nginx.
-6. Credentials are synchronized from AWS Secrets Manager through ESO.
-7. Removing one Nextcloud Pod does not make the service unavailable.
-8. Nextcloud replicas are distributed across Kubernetes nodes.
+---
 
 ## Cost Note
 
-This project creates chargeable AWS resources including:
+This project creates chargeable AWS resources, including:
 
 - EKS control plane
 - EC2 worker nodes
 - NAT Gateway
 - Application Load Balancer
 - EBS volumes
-- EFS storage
+- planned EFS storage
+- CloudWatch Logs
+- S3 backup storage
 
 AWS Budget alerts are strongly recommended before deployment.
 
+Resources should be destroyed when they are no longer required.
+
+---
+
+## Learning Approach
+
+This repository is intentionally developed as an engineering learning project.
+
+The workflow is:
+
+```text
+Learn a concept
+      |
+      v
+Implement it
+      |
+      v
+Integrate it with the existing architecture
+      |
+      v
+Test actual behavior
+      |
+      v
+Review errors and design gaps
+      |
+      v
+Fix and validate
+      |
+      v
+Document the final understanding
+```
+
+The project may therefore contain temporary implementation gaps while new components are being introduced.
+
+The objective is not to hide these mistakes, but to use them to understand how Kubernetes, AWS, Terraform, and application infrastructure behave when multiple systems interact.
+
+---
+
 ## Project Goal
 
-The goal of this repository is not to build a large enterprise Nextcloud platform.
+The goal of this repository is not to create a large enterprise Nextcloud platform.
 
-It is to provide a small, reproducible, and technically understandable Nextcloud cluster on AWS EKS while demonstrating the infrastructure components required to run a stateful application correctly on Kubernetes.
+The goal is to build a small, reproducible, and technically understandable Nextcloud platform on AWS EKS while developing a deeper understanding of:
+
+- Kubernetes
+- AWS infrastructure
+- Terraform
+- IAM and workload identity
+- storage
+- networking
+- scheduling
+- autoscaling
+- observability
+- backup and recovery
+- troubleshooting
+- system integration
+
+The final objective is not only to make the platform run, but to understand why it works, how it fails, and how it can be recovered.
