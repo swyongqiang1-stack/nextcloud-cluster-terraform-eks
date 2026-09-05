@@ -21,7 +21,20 @@ resource "kubernetes_ingress_v1" "nextcloud" {
     annotations = {
     "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
     "alb.ingress.kubernetes.io/target-type" = "ip"
+    "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
+      {
+        HTTP = 80
+      },
+      {
+        HTTPS = 443
+      }
+    ])
+
+    "alb.ingress.kubernetes.io/certificate-arn" = "unknow"   # your acm domain arn
+
+    "alb.ingress.kubernetes.io/ssl-redirect" = "443"
 }
+
   }
   spec {
     ingress_class_name = "alb"

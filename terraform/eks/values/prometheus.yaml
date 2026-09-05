@@ -1,0 +1,17 @@
+prometheus:
+  route:
+    main:
+      enabled: true
+      parentRefs:
+        - name: gateway
+      timeouts:
+        request: 120s
+        backendRequest: 60s
+
+  prometheus:
+  prometheusSpec:
+    replicas: 3
+    podAntiAffinity: "hard"
+    externalLabels:
+      cluster: nextcloud
+
