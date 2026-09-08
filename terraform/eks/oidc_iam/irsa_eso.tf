@@ -12,7 +12,7 @@ resource "aws_iam_role" "external_secrets" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:sub" = "system:serviceaccount:monitoring:external-secrets"
+            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:sub" = "system:serviceaccount:external-secrets:external-secrets-sa"
             "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:aud" = "sts.amazonaws.com"
           }
         }
@@ -46,7 +46,7 @@ resource "aws_iam_role_policy" "external_secrets" {
 
 resource "kubernetes_service_account" "external_secrets" {
   metadata {
-    name      = "external-secrets"   
+    name      = "external-secrets-sa"   
     namespace = "external-secrets"                     
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn  

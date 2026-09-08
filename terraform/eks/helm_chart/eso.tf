@@ -13,7 +13,7 @@ resource "helm_release" "external_secrets" {
 
 
   depends_on = [
-    kubernetes_service_account.external_secrets
+    kubernetes_service_account.external-secrets-sa
   ]
 }
 
