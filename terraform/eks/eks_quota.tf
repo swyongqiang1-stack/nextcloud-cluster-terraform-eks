@@ -1,8 +1,8 @@
 
-resource "kubernetes_resource_quota" "dev" {
+resource "kubernetes_resource_quota" "nextcloud" {
   metadata {
-    name = "dev"
-    namespace = "dev"
+    name = "nextcloud"
+    namespace = "nextcloud"
   }
   spec {
     hard = {
@@ -15,10 +15,10 @@ resource "kubernetes_resource_quota" "dev" {
 }
 
 
-resource "kubernetes_limit_range" "dev" {
+resource "kubernetes_limit_range" "nextcloud" {
   metadata {
-    name = "dev"
-    namespace = "dev"
+    name = "nextcloud"
+    namespace = "nextcloud"
   }
   spec {
     limit {

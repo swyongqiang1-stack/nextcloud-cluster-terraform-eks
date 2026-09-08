@@ -1,6 +1,7 @@
 resource "kubernetes_horizontal_pod_autoscaler" "nextcloud" {
   metadata {
     name = "nextcloud"
+    namespace = "nextcloud"
   }
 
   spec {

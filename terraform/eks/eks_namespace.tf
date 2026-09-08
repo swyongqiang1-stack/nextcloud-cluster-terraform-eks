@@ -31,3 +31,16 @@ resource "kubernetes_namespace" "ingress-nginx" {
     name = "ingress-nginx"
   }
 }
+
+
+
+resource "kubernetes_namespace" "nextcloud" {
+  metadata {
+    labels = {
+      "pod-security.kubernetes.io/enforce" = "baseline"
+      "pod-security.kubernetes.io/warn" = "restricted"
+    }
+
+    name = "nextcloud"
+  }
+}
