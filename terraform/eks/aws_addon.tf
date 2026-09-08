@@ -30,5 +30,5 @@ resource "aws_eks_addon" "efs_csi" {
 
 resource "aws_eks_addon" "s3_csi" {
   cluster_name = aws_eks_cluster.nextcloud.name
-  addon_name   = "aws-efs-csi-driver"
+  addon_name   = "aws-s3-csi-driver"
 }
