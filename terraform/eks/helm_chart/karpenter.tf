@@ -5,7 +5,7 @@ resource "helm_release" "Karpenter" {
   version          = "1.14.1"
   namespace        = "kube-system"
   depends_on = [
-    kubernetes_service_account.karpenter-controller
+    kubernetes_service_account.karpenter_controller
   ]
     set {
     name = "instanceProfile"

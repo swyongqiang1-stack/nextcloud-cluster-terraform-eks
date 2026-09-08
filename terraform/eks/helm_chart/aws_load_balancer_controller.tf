@@ -5,7 +5,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "3.5.0"
   namespace = "kube-system"
   depends_on = [
-    kubernetes_service_account.aws-load-balancer-controller
+    kubernetes_service_account.aws_load_balancer_controller
   ]
 
   set {
@@ -18,11 +18,6 @@ resource "helm_release" "aws_load_balancer_controller" {
     value = "false"
   }
 
-  set {
-    name = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
-  }
-  
 }
 
 #警告，先创建 serviceaccount，再跑这个。

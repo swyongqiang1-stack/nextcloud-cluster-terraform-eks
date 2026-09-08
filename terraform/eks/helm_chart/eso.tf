@@ -3,7 +3,7 @@ resource "helm_release" "external_secrets" {
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
   version          = "2.9.0"
-  namespace        = "external_secrets"
+  namespace        = "external-secrets"
   create_namespace = true
 
   set {
@@ -11,10 +11,6 @@ resource "helm_release" "external_secrets" {
     value = "false"
   }
 
-  set {
-    name  = "serviceAccount.name"
-    value = "external-secrets"
-  }
 
   depends_on = [
     kubernetes_service_account.external_secrets

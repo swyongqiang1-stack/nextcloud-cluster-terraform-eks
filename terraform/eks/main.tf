@@ -37,7 +37,7 @@ provider "helm" {
 }
 
 provider "kubernetes" {
-  host                   = "client.authentication.k8s.io/v1beta1"
+  host                   = data.aws_eks_cluster.nextcloud.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.nextcloud.certificate_authority[0].data)
   exec {
     api_version = "client.authentication.k8s.io/v1"
@@ -54,3 +54,12 @@ module "vpc" {
   cidr_block = var.cidr_block
   AZ = var.AZ
 } 
+
+
+module "oidc_iam" {
+  source = "./oidc_iam"
+}
+
+module "helm_chart" {
+  source = "./helm_chart"
+}

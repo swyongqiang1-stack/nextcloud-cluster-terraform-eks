@@ -133,3 +133,8 @@ redis:
     podLabels:
       app: redis
     podAntiAffinityPreset: hard
+
+  global:
+    storageClass: gp3-retain
+
+
