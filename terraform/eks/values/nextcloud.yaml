@@ -55,7 +55,7 @@ externalDatabase:
 
   existingSecret:
     enabled: true
-    secretName: postgres-secret
+    secretName: ppostgresql-secret
     passwordKey: password
 
 
@@ -79,7 +79,7 @@ postgresql:
         database: nextcloud
         existingSecret: postgres-secret
         secretKeys:
-          adminPasswordKey: postgres-password
+          adminPasswordKey: adminpassword
           userPasswordKey: password
 
   primary:
