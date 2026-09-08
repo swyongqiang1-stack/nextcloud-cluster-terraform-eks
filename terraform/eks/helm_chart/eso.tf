@@ -10,11 +10,7 @@ resource "helm_release" "external_secrets" {
     name  = "serviceAccount.create"
     value = "false"
   }
-
-
-  depends_on = [
-    kubernetes_service_account.external-secrets-sa
-  ]
+  
 }
 
 

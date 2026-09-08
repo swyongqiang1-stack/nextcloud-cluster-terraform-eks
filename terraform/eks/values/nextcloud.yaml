@@ -14,14 +14,14 @@ affinity:
 
 persistence:
   enabled: true
-  storageClass: gp3-retain
-  accessMode: ReadWriteOnce
+  storageClass: nextcloud-efs
+  accessMode: ReadWriteMany
   size: 10Gi
 
   nextcloudData:
     enabled: true
-    storageClass: gp3-retain
-    accessMode: ReadWriteOnce
+    storageClass: nextcloud-efs
+    accessMode: ReadWriteMany
     size: 50Gi
 
 nextcloud:
@@ -102,7 +102,7 @@ postgresql:
 
   persistence:
     enabled: true
-    storageClass: gp3-retain
+    storageClass: ebs-gp3
     size: 100Gi
 
   metrics:
@@ -135,6 +135,6 @@ redis:
     podAntiAffinityPreset: hard
 
   global:
-    storageClass: gp3-retain
+    storageClass: ebs-gp3
 
 
