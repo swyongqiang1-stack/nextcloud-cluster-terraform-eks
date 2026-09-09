@@ -17,31 +17,31 @@ resource "aws_efs_file_system" "nextcloud_efs" {
   encrypted = true
 }
 
-
-resource "aws_security_group" "allow_efs" {
-  name        = "allow_efs"
-  description = "Allow access efs file system"
-  vpc_id      = module.vpc.vpc_id
-
-  tags = {
-    Name = "allow_tls"
-  }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
-  security_group_id = aws_security_group.allow_efs.id
-  cidr_ipv4         = module.vpc.vpc_id
-  from_port         = 2049
-  ip_protocol       = "tcp"
-  to_port           = 2049
+resource "aws_efs_mount_target" "nextcloud_efs" {
+  count = 3
+  file_system_id = aws_efs_file_system.nextcloud_efs.id
+  subnet_id      = module.vpc.private_subnet_ids[count.index]
+  security_groups = [aws_security_group.nextcloud_efs.id]
 }
 
 
-resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
-  security_group_id = aws_security_group.allow_tls.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+resource "aws_security_group" "nextcloud_efs" {
+  name        = "nextcloud_efs"
+  description = "nextcloud node group access efs"
+  vpc_id      = aws_vpc.main.id
 }
+
+resource "aws_vpc_security_group_ingress_rule" "nextcloud_efs_allow_access" {
+  security_group_id = aws_security_group.nextcloud_efs.id
+
+  referenced_security_group_id = aws_security_group.eks_nodes.id
+  from_port   = 2049
+  ip_protocol = "tcp"
+  to_port     = 2049
+}
+
+
+
 
 
 
