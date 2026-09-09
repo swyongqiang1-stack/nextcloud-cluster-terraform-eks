@@ -1,5 +1,5 @@
 resource "aws_iam_role" "external_secrets" {
-  name = "eks_external_secrets_role"
+  name = "eks-external-secrets-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -23,7 +23,7 @@ resource "aws_iam_role" "external_secrets" {
 
 
 resource "aws_iam_role_policy" "external_secrets" {
-  name = "external_secrets_policy"
+  name = "external-secrets-policy"
   role = aws_iam_role.external_secrets.id
 
   policy = jsonencode({

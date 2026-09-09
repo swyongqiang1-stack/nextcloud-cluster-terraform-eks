@@ -1,5 +1,5 @@
 resource "helm_release" "external_secrets" {
-  name             = "external_secrets"
+  name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
   version          = "2.9.0"

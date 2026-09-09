@@ -1,5 +1,5 @@
 resource "aws_iam_role" "karpenter_controller" {
-  name = "eks_karpenter_controller_role"
+  name = "eks-karpenter-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

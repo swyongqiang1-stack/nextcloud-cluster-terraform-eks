@@ -1,5 +1,5 @@
 resource "aws_iam_role" "postgres_backup" {
-  name = "eks_postgres_backup_role"
+  name = "eks-postgres-backup-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -22,7 +22,7 @@ resource "aws_iam_role" "postgres_backup" {
 }
 
 resource "aws_iam_role_policy" "postgres_backup" {
-  name = "postgres_backup_policy"
+  name = "postgres-backup-policy"
   role = aws_iam_role.postgres_backup.id
 
   policy = jsonencode({

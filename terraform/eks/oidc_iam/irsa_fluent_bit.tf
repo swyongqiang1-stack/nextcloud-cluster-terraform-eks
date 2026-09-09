@@ -1,5 +1,5 @@
 resource "aws_iam_role" "fluent_bit" {
-  name = "eks_fluent_bit_role"
+  name = "eks-fluent-bit-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -22,7 +22,7 @@ resource "aws_iam_role" "fluent_bit" {
 }
 
 resource "aws_iam_role_policy" "fluent_bit" {
-  name = "fluent_bit_policy"
+  name = "fluent-bit-policy"
   role = aws_iam_role.fluent_bit.id
 
   policy = jsonencode({
