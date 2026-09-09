@@ -52,7 +52,6 @@ module "vpc" {
   public_subnet = var.public_subnet
   private_subnet = var.private_subnet
   cidr_block = var.cidr_block
-  AZ = var.AZ
 } 
 
 

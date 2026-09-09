@@ -10,6 +10,3 @@ variable "cidr_block"{
     type = string
 }
 
-variable "AZ" {
-    type = list(string)
-}
