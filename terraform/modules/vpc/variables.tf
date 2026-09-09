@@ -9,3 +9,7 @@ variable "public_subnet" {
 variable "private_subnet" {
   type = list(string)
 }
+
+variable "AZ" {
+  type = list(string)
+}
