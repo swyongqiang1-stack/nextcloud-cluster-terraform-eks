@@ -10,7 +10,10 @@ resource "helm_release" "external_secrets" {
     name  = "serviceAccount.create"
     value = "false"
   }
-  
+  set {
+    name = "serviceAccount.name"
+    value = "external-secrets-sa"
+  }
 }
 
 

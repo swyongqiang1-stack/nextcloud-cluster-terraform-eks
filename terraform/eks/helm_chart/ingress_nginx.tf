@@ -11,6 +11,12 @@ resource "helm_release" "ingress_nginx" {
     file("${path.module}/values/ingress_nginx.yaml")
   ]
 
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+    }
+    
+    
 }
 
 resource "kubernetes_ingress_v1" "nextcloud" {

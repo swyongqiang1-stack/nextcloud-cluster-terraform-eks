@@ -7,4 +7,15 @@ resource "helm_release" "fluent_bit" {
   values = [
     file("${path.module}/values/fluent_bit.yaml")
   ]
+
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+    }
+    
+  set {
+    name = "serviceAccount.name"
+    value = "fluent-bit"
+  }
+
 }

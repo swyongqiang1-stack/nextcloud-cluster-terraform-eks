@@ -1,23 +1,21 @@
 resource "aws_iam_role" "aws_load_balancer_controller" {
-  name = "eks-lb_controller-role"
+  name = "eks-lb-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.cluster.arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:aud" = "sts.amazonaws.com"
-          }
-        }
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
       }
-    ]
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
   })
 }
 
@@ -36,8 +34,14 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
   metadata {
     name      = "aws-load-balancer-controller"   
     namespace = "kube-system"                     
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller.arn  
-    }
   }
 }
+
+
+resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = aws_iam_role.aws_load_balancer_controller.arn
+}
+

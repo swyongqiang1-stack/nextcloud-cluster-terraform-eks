@@ -3,21 +3,19 @@ resource "aws_iam_role" "karpenter_controller" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.cluster.arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:sub" = "system:serviceaccount:kube-system:karpenter-controller"
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:aud" = "sts.amazonaws.com"
-          }
-        }
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
       }
-    ]
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
   })
 }
 
@@ -202,10 +200,14 @@ resource "kubernetes_service_account" "karpenter_controller" {
   metadata {
     name      = "karpenter-controller"   
     namespace = "kube-system"                     
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.karpenter_controller.arn 
-    }
   }
+}
+
+resource "aws_eks_pod_identity_association" "karpenter_controller" {
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  namespace       = "kube-system"
+  service_account = "karpenter-controller"
+  role_arn        = aws_iam_role.karpenter_controller.arn
 }
 
 
@@ -217,17 +219,18 @@ resource "aws_iam_role" "karpenter_node" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
 
-    Statement = [
-      {
-        Effect = "Allow"
+    Statement = [{
+      Effect = "Allow"
 
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-
-        Action = "sts:AssumeRole"
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
       }
-    ]
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
   })
 }
 
@@ -255,4 +258,20 @@ resource "aws_iam_role_policy_attachment" "karpenter_node_ssm" {
 resource "aws_iam_instance_profile" "karpenter_node" {
   name = "karpenter_node"
   role = aws_iam_role.karpenter_node.name
+}
+
+resource "kubernetes_service_account" "karpenter_node" {
+  metadata {
+    name      = "karpenter-node"   
+    namespace = "kube-system"                     
+  }
+}
+
+
+
+resource "aws_eks_pod_identity_association" "karpenter_node" {
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  namespace       = "kube-system"
+  service_account = "karpenter-node"
+  role_arn        = aws_iam_role.karpenter_node.arn
 }

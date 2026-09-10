@@ -1,25 +1,25 @@
 resource "aws_iam_role" "fluent_bit" {
   name = "eks-fluent-bit-role"
 
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.cluster.arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:sub" = "system:serviceaccount:dev:fluent-bit"
-            "oidc.eks.ap-southeast-1.amazonaws.com/id/你的集群OIDC-ID:aud" = "sts.amazonaws.com"
-          }
-        }
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
       }
-    ]
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
   })
 }
+
 
 resource "aws_iam_role_policy" "fluent_bit" {
   name = "fluent-bit-policy"
@@ -51,8 +51,14 @@ resource "kubernetes_service_account" "fluent_bit" {
   metadata {
     name      = "fluent-bit"   
     namespace = "dev"                     
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.fluent_bit.arn  
-    }
+
   }
+}
+
+
+resource "aws_eks_pod_identity_association" "fluent_bit" {
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  namespace       = "dev"
+  service_account = "fluent-bit"
+  role_arn        = aws_iam_role.fluent_bit.arn
 }

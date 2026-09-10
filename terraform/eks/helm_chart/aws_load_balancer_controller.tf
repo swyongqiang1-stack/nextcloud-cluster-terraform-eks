@@ -18,6 +18,10 @@ resource "helm_release" "aws_load_balancer_controller" {
     value = "false"
   }
 
+  set {
+    name = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
 }
 
 #警告，先创建 serviceaccount，再跑这个。
