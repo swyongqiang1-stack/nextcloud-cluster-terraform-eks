@@ -7,10 +7,6 @@ resource "helm_release" "Karpenter" {
   depends_on = [
     kubernetes_service_account.karpenter_controller
   ]
-    set {
-    name = "instanceProfile"
-    value  = "KarpenterNodeInstanceProfile-nextcloud"
-    }
   
     set {
     name  = "serviceAccount.create"

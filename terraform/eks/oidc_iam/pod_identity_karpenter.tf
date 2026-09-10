@@ -223,7 +223,7 @@ resource "aws_iam_role" "karpenter_node" {
       Effect = "Allow"
 
       Principal = {
-        Service = "pods.eks.amazonaws.com"
+        Service = "ec2.eks.amazonaws.com"
       }
 
       Action = [
@@ -256,22 +256,7 @@ resource "aws_iam_role_policy_attachment" "karpenter_node_ssm" {
 
 
 resource "aws_iam_instance_profile" "karpenter_node" {
-  name = "karpenter_node"
+  name = "karpenter-node"
   role = aws_iam_role.karpenter_node.name
 }
 
-resource "kubernetes_service_account" "karpenter_node" {
-  metadata {
-    name      = "karpenter-node"   
-    namespace = "kube-system"                     
-  }
-}
-
-
-
-resource "aws_eks_pod_identity_association" "karpenter_node" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
-  namespace       = "kube-system"
-  service_account = "karpenter-node"
-  role_arn        = aws_iam_role.karpenter_node.arn
-}
