@@ -1,12 +1,12 @@
-resource "kubernetes_horizontal_pod_autoscaler" "nextcloud" {
+resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
   metadata {
-    name = "nextcloud"
+    name = "nextcloud-hpa"
     namespace = "nextcloud"
   }
 
   spec {
-    min_replicas = 1
-    max_replicas = 3
+    min_replicas = 3
+    max_replicas = 6
 
     scale_target_ref {
       kind = "Deployment"
@@ -14,7 +14,7 @@ resource "kubernetes_horizontal_pod_autoscaler" "nextcloud" {
     }
 
     metric {
-      type = "resource"
+      type = "Resource"
       resource {
         name = "cpu"
         target {
@@ -24,39 +24,7 @@ resource "kubernetes_horizontal_pod_autoscaler" "nextcloud" {
       }
 
       }
-        
-    behavior {
-      scale_up {
-        stabilization_window_seconds = 0
-        select_policy                = "max"
-        policy {
-          period_seconds = 60
-          type           = "Pods"
-          value          = 4
-        }
 
-        policy {
-          period_seconds = 60
-          type           = "Percent"
-          value          = 50
-        }
-      }
-      
-      scale_down {
-        stabilization_window_seconds = 600
-        select_policy                = "min"
-        policy {
-          period_seconds = 60
-          type           = "Percent"
-          value          = 100
-        }
-        policy {
-          period_seconds = 60
-          type           = "pods"
-          value          = 3
-        }
-        }
-      }
-    }
   }
 
+# i don't want to add behavior,i can not understanding it how to work on best condition
