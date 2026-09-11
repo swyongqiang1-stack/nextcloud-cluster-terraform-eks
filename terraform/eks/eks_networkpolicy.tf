@@ -96,7 +96,6 @@ resource "kubernetes_network_policy" "nextcloud" {
       }
     }
 
-
     egress {
       to {
         pod_selector {
@@ -105,6 +104,14 @@ resource "kubernetes_network_policy" "nextcloud" {
           }
         }
       }
+
+      ports {
+        protocol = "TCP"
+        port     = "5432"
+      }
+    }
+
+    egress {
       to {
         pod_selector {
           match_labels = {
@@ -116,10 +123,6 @@ resource "kubernetes_network_policy" "nextcloud" {
       ports {
         protocol = "TCP"
         port     = "6379"
-      }
-      ports {
-        protocol = "TCP"
-        port     = "5432"
       }
     }
 
@@ -142,3 +145,74 @@ resource "kubernetes_network_policy" "nextcloud" {
   }
 }
 
+
+
+resource "kubernetes_network_policy" "postgresql" {
+  metadata {
+    name      = "postgresql"
+    namespace = "nextcloud"
+  }
+
+  spec {
+    pod_selector {
+        match_labels = {
+          app = "database"
+      }
+    }
+
+    policy_types = [
+      "Ingress"
+    ]
+
+    ingress {
+      from {
+        pod_selector {
+          match_labels = {
+            "app" = "nextcloud"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "5432"
+      }
+    }
+  }
+}
+
+
+
+resource "kubernetes_network_policy" "redis" {
+  metadata {
+    name      = "redis"
+    namespace = "nextcloud"
+  }
+
+  spec {
+    pod_selector {
+        match_labels = {
+          app = "redis"
+      }
+    }
+
+    policy_types = [
+      "Ingress"
+    ]
+
+    ingress {
+      from {
+        pod_selector {
+          match_labels = {
+            "app" = "nextcloud"
+          }
+        }
+      }
+      
+      ports {
+        protocol = "TCP"
+        port     = "6379"
+      }
+    }
+  }
+}

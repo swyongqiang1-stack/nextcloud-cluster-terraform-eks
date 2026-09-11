@@ -54,7 +54,7 @@ resource "kubernetes_ingress_v1" "nextcloud" {
             service {
               name = "nextcloud"
               port {
-                number = 80
+                number = 8080
               }
             }
           }

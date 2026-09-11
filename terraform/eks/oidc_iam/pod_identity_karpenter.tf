@@ -223,7 +223,7 @@ resource "aws_iam_role" "karpenter_node" {
       Effect = "Allow"
 
       Principal = {
-        Service = "ec2.eks.amazonaws.com"
+        Service = "ec2.amazonaws.com"
       }
 
       Action = [

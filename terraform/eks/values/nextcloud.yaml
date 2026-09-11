@@ -55,7 +55,7 @@ externalDatabase:
 
   existingSecret:
     enabled: true
-    secretName: ppostgresql-secret
+    secretName: postgresql-secret
     passwordKey: password
 
 
@@ -100,10 +100,10 @@ postgresql:
         effect: NoSchedule
     
 
-  persistence:
-    enabled: true
-    storageClass: ebs-gp3
-    size: 100Gi
+    persistence:
+      enabled: true
+      storageClass: ebs-gp3
+      size: 100Gi
 
   metrics:
     enabled: true

@@ -15,13 +15,13 @@ taint {
 
 
   scaling_config {
-    desired_size = 3
-    max_size     = 10
-    min_size     = 3
+    desired_size = 1
+    max_size     = 2
+    min_size     = 1
   }
 
   update_config {
-    max_unavailable = 3
+    max_unavailable = 1
   }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.
