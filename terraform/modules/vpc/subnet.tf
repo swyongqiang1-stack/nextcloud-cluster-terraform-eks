@@ -6,6 +6,7 @@ resource "aws_subnet" "public_subnet" {
   availability_zone = var.AZ[count.index]
   tags = {
     Name = "public_subnet_${count.index}"
+    "karpenter.sh/discovery" = "nextcloud"
   }
 }
 
