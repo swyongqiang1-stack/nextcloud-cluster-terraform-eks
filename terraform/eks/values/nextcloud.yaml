@@ -1,6 +1,8 @@
 replicaCount: 3
+
 deploymentLabels:
   app: nextcloud
+
 podLabels:
   app: nextcloud
 
@@ -11,7 +13,7 @@ affinity:
           matchLabels:
             app: nextcloud
         topologyKey: kubernetes.io/hostname
-
+        
 persistence:
   enabled: true
   storageClass: nextcloud-efs
@@ -32,12 +34,18 @@ nextcloud:
     passwordKey: password
 
   configs:
-  logging.config.php: |-
-    <?php
-    $CONFIG = array (
-      'log_type' => 'errorlog',
-      'loglevel' => 2
-    );
+    logging.config.php: |-
+      <?php
+      $CONFIG = array (
+        'log_type' => 'errorlog',
+        'loglevel' => 2
+      );
+
+    phpConfigs:
+      zz-memory_limit.ini: |-
+        memory_limit=512M
+
+
   host: www.erben.cn
   
 securityContext:
