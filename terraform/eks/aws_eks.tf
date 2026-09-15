@@ -17,6 +17,9 @@ resource "aws_eks_cluster" "nextcloud" {
   ]
 }
 
+
+
+
 resource "aws_iam_role" "cluster" {
   name = "eks-cluster-nextcloud"
   assume_role_policy = jsonencode({

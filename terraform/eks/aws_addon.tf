@@ -48,12 +48,6 @@ resource "aws_eks_addon" "efs_csi" {
   ]
 }
 
-resource "aws_eks_addon" "s3_csi" {
-  cluster_name = aws_eks_cluster.nextcloud.name
-  addon_name   = "aws-s3-csi-driver"
-}
-
-
 resource "aws_eks_addon" "pod_identity_agent" {
   cluster_name = aws_eks_cluster.nextcloud.name
   addon_name   = "eks-pod-identity-agent"

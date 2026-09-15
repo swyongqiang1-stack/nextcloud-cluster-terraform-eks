@@ -27,6 +27,7 @@ resource "kubernetes_ingress_v1" "nextcloud" {
     annotations = {
     "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
     "alb.ingress.kubernetes.io/target-type" = "ip"
+    "external-dns.alpha.kubernetes.io/hostname" = "erben.cn"
     "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
       {
         HTTP = 80
@@ -36,7 +37,7 @@ resource "kubernetes_ingress_v1" "nextcloud" {
       }
     ])
 
-    "alb.ingress.kubernetes.io/certificate-arn" = "unknow"   # your acm domain arn
+    "alb.ingress.kubernetes.io/certificate-arn" = "arn:aws:acm:ap-southeast-1:463884819678:certificate/1880b9bc-3df9-416c-bc43-97e6a8851050"   # your acm domain arn
 
     "alb.ingress.kubernetes.io/ssl-redirect" = "443"
 }

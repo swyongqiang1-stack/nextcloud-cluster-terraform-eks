@@ -35,7 +35,7 @@ spec:
             - "t"
 
         - key: karpenter.k8s.aws/instance-generation
-          operator: in
+          operator: In
           values:
             - "3"
 

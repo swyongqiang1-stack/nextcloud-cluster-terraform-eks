@@ -31,17 +31,27 @@ nextcloud:
     usernameKey: username
     passwordKey: password
 
+  configs:
+  logging.config.php: |-
+    <?php
+    $CONFIG = array (
+      'log_type' => 'errorlog',
+      'loglevel' => 2
+    );
+  host: www.erben.cn
+  
 securityContext:
+  runAsUser: 33
+  runAsGroup: 33
   runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
-  seccompProfile:
-    type: RuntimeDefault
+  readOnlyRootFilesystem: false
 
 podSecurityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    Drop: ALL
+  fsGroup: 33
+  runAsUser: 33
+  runAsGroup: 33
+  runAsNonRoot: true
+  readOnlyRootFilesystem: false
 
 internalDatabase:
   enabled: false
@@ -59,13 +69,6 @@ externalDatabase:
     passwordKey: password
 
 
-configs:
-  logging.config.php: |-
-    <?php
-    $CONFIG = array (
-      'log_type' => 'errorlog',
-      'loglevel' => 2
-    );
 
 
 
