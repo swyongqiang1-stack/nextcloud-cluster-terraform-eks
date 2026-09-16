@@ -92,12 +92,3 @@ resource "aws_iam_role_policy" "nextcloud_efs" {
 
 
 
-
-resource "kubernetes_service_account" "nextcloud_efs" {
-  metadata {
-    name      = "nextcloud-efs"   
-    namespace = "nextcloud"                     
-  }
-}
-
-

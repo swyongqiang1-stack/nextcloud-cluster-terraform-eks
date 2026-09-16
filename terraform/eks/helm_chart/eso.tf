@@ -14,6 +14,7 @@ resource "helm_release" "external_secrets" {
     name = "serviceAccount.name"
     value = "external-secrets-sa"
   }
+  
 }
 
 

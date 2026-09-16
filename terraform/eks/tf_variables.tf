@@ -13,3 +13,8 @@ variable "cidr_block"{
 variable "AZ" {
     type = list(string)
 }
+
+
+variable "cluster_name" {
+  type = string
+}

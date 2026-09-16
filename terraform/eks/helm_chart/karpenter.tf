@@ -4,10 +4,7 @@ resource "helm_release" "Karpenter" {
   chart            = "karpenter"
   version          = "1.14.1"
   namespace        = "kube-system"
-  depends_on = [
-    kubernetes_service_account.karpenter_controller
-  ]
-  
+
     set {
     name  = "serviceAccount.create"
     value = "false"

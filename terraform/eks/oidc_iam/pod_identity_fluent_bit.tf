@@ -50,7 +50,7 @@ resource "aws_iam_role_policy" "fluent_bit" {
 resource "kubernetes_service_account" "fluent_bit" {
   metadata {
     name      = "fluent-bit"   
-    namespace = "dev"                     
+    namespace = "nextcloud"                     
 
   }
 }
@@ -58,7 +58,7 @@ resource "kubernetes_service_account" "fluent_bit" {
 
 resource "aws_eks_pod_identity_association" "fluent_bit" {
   cluster_name    = aws_eks_cluster.nextcloud.name
-  namespace       = "dev"
+  namespace       = "nextcloud"
   service_account = "fluent-bit"
   role_arn        = aws_iam_role.fluent_bit.arn
 }

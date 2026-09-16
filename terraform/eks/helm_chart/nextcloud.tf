@@ -6,6 +6,6 @@ resource "helm_release" "nextcloud" {
   namespace = "nextcloud"
 
   values = [
-    file("${path.module}/values/nextcloud.yaml")
+    file("${path.module}/../values/nextcloud.yaml")
   ]
 }

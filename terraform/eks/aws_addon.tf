@@ -22,13 +22,13 @@ resource "aws_eks_addon" "ebs_csi" {
   addon_name   = "aws-ebs-csi-driver"
 
   pod_identity_association {
-    role_arn        = aws_iam_role.ebs_csi.arn
-    service_account = "nextcloud-ebs" 
+    role_arn        = module.aws_iam_role.nextcloud_ebs.arn
+    service_account = ebs-csi-controller-sa
   }
 
   depends_on = [
     aws_eks_addon.pod_identity_agent,
-    aws_iam_role_policy.nextcloud_ebs
+    module.aws_iam_role_policy.nextcloud_ebs
   ]
 
 }
@@ -38,13 +38,13 @@ resource "aws_eks_addon" "efs_csi" {
   cluster_name = aws_eks_cluster.nextcloud.name
   addon_name   = "aws-efs-csi-driver"
     pod_identity_association {
-    role_arn        = aws_iam_role.nextcloud_efs.arn
-    service_account = "nextcloud-efs"
+    role_arn        = module.aws_iam_role.nextcloud_efs.arn
+    service_account = efs-csi-controller-sa
   }
 
   depends_on = [
     aws_eks_addon.pod_identity_agent,
-    aws_iam_role_policy.nextcloud_efs
+    module.aws_iam_role_policy.nextcloud_efs
   ]
 }
 

@@ -58,8 +58,10 @@ module "vpc" {
 
 module "oidc_iam" {
   source = "./oidc_iam"
+  cluster_name = aws_eks_cluster.nextcloud.name
 }
 
 module "helm_chart" {
   source = "./helm_chart"
+  cluster_name = aws_eks_cluster.nextcloud.name
 }

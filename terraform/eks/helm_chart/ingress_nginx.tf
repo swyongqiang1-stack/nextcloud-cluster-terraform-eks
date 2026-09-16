@@ -3,12 +3,8 @@ resource "helm_release" "ingress_nginx" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
-  depends_on = [
-    kubernetes_service_account.aws-load-balancer-controller
-  ]
-  
   values = [
-    file("${path.module}/values/ingress_nginx.yaml")
+    file("${path.module}/../values/ingress_nginx.yaml")
   ]
 
   set {
@@ -27,7 +23,7 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
     annotations = {
     "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
     "alb.ingress.kubernetes.io/target-type" = "ip"
-    "external-dns.alpha.kubernetes.io/hostname" = "erben.cn"
+    "external-dns.alpha.kubernetes.io/hostname" = "www.erben.cn"
     "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
       {
         HTTP = 80

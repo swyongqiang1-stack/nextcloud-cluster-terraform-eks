@@ -3,6 +3,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
   metadata {
     name      = "backup-database"
     namespace = "nextcloud"
+
   }
 
   spec {
@@ -11,13 +12,18 @@ resource "kubernetes_cron_job_v1" "backup_database" {
     concurrency_policy = "Forbid"
 
     job_template {
-      metadata {}
+      metadata {
+      }
 
       spec {
         backoff_limit = 2
 
         template {
-          metadata {}
+          metadata {
+            labels = {
+              app = "database-backup"
+    }
+          }
 
           spec {
             service_account_name = "postgres-backup"
@@ -25,7 +31,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
 
             container {
               name  = "postgres-backup"
-              image = "postgres:17"
+              image = "your-ecr-url/postgres-backup:version-tag"
 
               command = [
                 "/bin/sh",

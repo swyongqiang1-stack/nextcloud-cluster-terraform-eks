@@ -151,6 +151,7 @@ resource "kubernetes_network_policy" "postgresql" {
   metadata {
     name      = "postgresql"
     namespace = "nextcloud"
+    
   }
 
   spec {
@@ -212,6 +213,96 @@ resource "kubernetes_network_policy" "redis" {
       ports {
         protocol = "TCP"
         port     = "6379"
+      }
+    }
+  }
+}
+
+
+
+
+resource "kubernetes_network_policy" "postgresql_back" {
+  metadata {
+    name      = "postgresql_back"
+    namespace = "nextcloud"
+  }
+
+  spec {
+    pod_selector {
+        match_labels = {
+          app = "database"
+      }
+    }
+
+    policy_types = [
+      "Ingress"
+    ]
+
+    ingress {
+      from {
+        pod_selector {
+          match_labels = {
+            "app" = "database-backup"
+          }
+        }
+      }
+      
+      ports {
+        protocol = "TCP"
+        port     = "5432"
+      }
+    }
+  }
+}
+
+
+
+
+resource "kubernetes_network_policy" "cronjob_access" {
+  metadata {
+    name      = "cronjob"
+    namespace = "nextcloud"
+  }
+
+  spec {
+    pod_selector {
+        match_labels = {
+          app = "database"
+      }
+    }
+
+    policy_types = [
+      "Engress"
+    ]
+    egress {
+      to {
+        pod_selector {
+          match_labels = {
+            app = "database"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "5432"
+      }
+    }
+    
+    egress {
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+
+          except = [
+            "169.254.169.254/32"
+          ]
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "443"
       }
     }
   }

@@ -127,7 +127,7 @@ redis:
   auth:
     enabled: true
     existingSecret: redis-secret
-    existingSecretPasswordKey: password
+    existingSecretPasswordKey: redis-password
 
   networkPolicy:
     enabled: true

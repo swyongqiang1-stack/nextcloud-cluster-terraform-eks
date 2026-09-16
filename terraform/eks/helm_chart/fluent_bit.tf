@@ -5,7 +5,7 @@ resource "helm_release" "fluent_bit" {
   version          = "0.58.1"
   namespace        = "nextcloud"
   values = [
-    file("${path.module}/values/fluent_bit.yaml")
+    file("${path.module}/../values/fluent_bit.yaml")
   ]
 
   set {

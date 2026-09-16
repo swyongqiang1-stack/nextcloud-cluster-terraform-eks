@@ -4,9 +4,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart      = "aws-load-balancer-controller"
   version    = "3.5.0"
   namespace = "kube-system"
-  depends_on = [
-    kubernetes_service_account.aws_load_balancer_controller
-  ]
+
   
 
   set {

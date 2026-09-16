@@ -26,5 +26,5 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
       }
 
   }
-
+}
 # i don't want to add behavior,i can not understanding it how to work on best condition

@@ -26,22 +26,19 @@ resource "aws_efs_mount_target" "nextcloud_efs" {
 
 
 resource "aws_security_group" "nextcloud_efs" {
-  name        = "nextcloud_efs"
+  name        = "nextcloud-efs"
   description = "nextcloud node group access efs"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = module.vpc.vpc_id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "nextcloud_efs_allow_access" {
   security_group_id = aws_security_group.nextcloud_efs.id
 
-  referenced_security_group_id = aws_security_group.eks_nodes.id
+  referenced_security_group_id = aws_eks_cluster.nextcloud.vpc_config[0].cluster_security_group_id
   from_port   = 2049
   ip_protocol = "tcp"
   to_port     = 2049
 }
-
-
-
 
 
 
@@ -57,6 +54,5 @@ resource "kubernetes_storage_class" "nextcloud_efs" {
     directoryPerms   = "750"
   }
 }
-
 
 

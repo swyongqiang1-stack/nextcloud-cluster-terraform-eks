@@ -1,15 +1,14 @@
-ingress:
-  controller:
-    service:
-      type: ClusterIP
+controller:
+  service:
+    type: ClusterIP
 
-    metrics:
+  metrics:
+    enabled: true
+    serviceMonitor:
       enabled: true
-      serviceMonitor:
-        enabled: true
 
-    config:
-      hsts: "true"
-      hsts-max-age: "15768000"
-      hsts-include-subdomains: "true"
-      hsts-preload: "true"
+  config:
+    hsts: "true"
+    hsts-max-age: "15768000"
+    hsts-include-subdomains: "true"
+    hsts-preload: "true"

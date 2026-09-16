@@ -224,9 +224,3 @@ resource "aws_iam_role_policy" "nextcloud_ebs" {
 }
 
 
-resource "kubernetes_service_account" "nextcloud_ebs" {
-  metadata {
-    name      = "nextcloud-ebs"   
-    namespace = "nextcloud"                     
-  }
-}
