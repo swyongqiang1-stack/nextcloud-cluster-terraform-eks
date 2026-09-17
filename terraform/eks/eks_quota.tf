@@ -6,9 +6,9 @@ resource "kubernetes_resource_quota" "nextcloud" {
   }
   spec {
     hard = {
-      pods = 30
-      cpu = "16"        
-      memory = "32Gi"  
+      pods = 20
+      cpu = "20"        
+      memory = "20Gi"  
     }
 
   }
@@ -25,15 +25,15 @@ resource "kubernetes_limit_range" "nextcloud" {
       type = "Pod"
       max = {
         cpu    = "4000m"
-        memory = "8G"
+        memory = "4G"
       }
     }
 
     limit {
       type = "Container"
       default = {
-        cpu    = "250m"
-        memory = "256Mi"
+        cpu    = "3000m"
+        memory = "3000Mi"
       }
     }
   }

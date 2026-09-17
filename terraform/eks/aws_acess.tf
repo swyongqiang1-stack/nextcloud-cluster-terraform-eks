@@ -5,7 +5,7 @@ resource "aws_eks_access_entry" "nextcloud" {
 
 resource "aws_eks_access_entry" "karpenter_node" {
   cluster_name  = var.cluster_name
-  principal_arn = aws_iam_role.karpenter_node.arn
+  principal_arn = module.oidc_iam.karpenter_node_arn
   type          = "EC2_LINUX"
 }
 

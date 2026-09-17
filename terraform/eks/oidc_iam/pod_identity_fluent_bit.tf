@@ -57,7 +57,7 @@ resource "kubernetes_service_account" "fluent_bit" {
 
 
 resource "aws_eks_pod_identity_association" "fluent_bit" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
+  cluster_name    = var.cluster_name
   namespace       = "nextcloud"
   service_account = "fluent-bit"
   role_arn        = aws_iam_role.fluent_bit.arn

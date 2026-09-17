@@ -5,8 +5,8 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
   }
 
   spec {
-    min_replicas = 3
-    max_replicas = 6
+    min_replicas = 1
+    max_replicas = 20
 
     scale_target_ref {
       kind = "Deployment"
@@ -19,7 +19,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
         name = "cpu"
         target {
           type  = "Utilization"
-          value = "70"
+          average_utilization = 70
         }
       }
 

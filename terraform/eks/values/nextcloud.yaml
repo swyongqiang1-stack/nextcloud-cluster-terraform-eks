@@ -1,4 +1,4 @@
-replicaCount: 3
+replicaCount: 2
 
 deploymentLabels:
   app: nextcloud
@@ -26,40 +26,6 @@ persistence:
     accessMode: ReadWriteMany
     size: 50Gi
 
-nextcloud:
-  existingSecret:
-    enabled: true
-    secretName: nextcloud-secret
-    usernameKey: username
-    passwordKey: password
-
-  configs:
-    logging.config.php: |-
-      <?php
-      $CONFIG = array (
-        'log_type' => 'errorlog',
-        'loglevel' => 2
-      );
-
-    phpConfigs:
-      zz-memory_limit.ini: |-
-        memory_limit=512M
-
-
-  host: www.erben.cn
-  
-securityContext:
-  runAsUser: 33
-  runAsGroup: 33
-  runAsNonRoot: true
-  readOnlyRootFilesystem: false
-
-podSecurityContext:
-  fsGroup: 33
-  runAsUser: 33
-  runAsGroup: 33
-  runAsNonRoot: true
-  readOnlyRootFilesystem: false
 
 internalDatabase:
   enabled: false
@@ -77,6 +43,43 @@ externalDatabase:
     passwordKey: password
 
 
+    
+nextcloud:
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secret
+    usernameKey: nextcloud-username
+    passwordKey: nextcloud-password
+
+  configs:
+    logging.config.php: |-
+      <?php
+      $CONFIG = array (
+        'log_type' => 'errorlog',
+        'loglevel' => 2
+      );
+
+  phpConfigs:
+    zz-memory_limit.ini: |-
+      memory_limit=512M
+
+  host: www.erben.cn
+  
+  securityContext:
+    runAsUser: 33
+    runAsGroup: 33
+    runAsNonRoot: true
+    readOnlyRootFilesystem: false
+
+  podSecurityContext:
+    fsGroup: 33
+    runAsUser: 33
+    runAsGroup: 33
+    runAsNonRoot: true
+
+
+
+
 
 
 
@@ -88,10 +91,10 @@ postgresql:
       auth:
         username: nextcloud
         database: nextcloud
-        existingSecret: postgres-secret
+        existingSecret: postgresql-secret
         secretKeys:
-          adminPasswordKey: adminpassword
-          userPasswordKey: password
+          adminPasswordKey: postgresql-adminpassword
+          userPasswordKey: PGPASSWORD
 
   primary:
     nodeSelector:

@@ -48,7 +48,7 @@ resource "kubernetes_service_account" "postgres_backup" {
 
 
 resource "aws_eks_pod_identity_association" "postgres_backup" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
+  cluster_name    = var.cluster_name
   namespace       = "nextcloud"
   service_account = "postgres-backup"
   role_arn        = aws_iam_role.postgres_backup.arn

@@ -34,7 +34,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
               image = "your-ecr-url/postgres-backup:version-tag"
 
               command = [
-                "/bin/sh",
+                "/bin/bash",
                 "/scripts/backup.sh"
               ]
 
@@ -54,7 +54,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
             volume {
               name = "backup-script"
               config_map {
-                name = postgres-backup-script
+                name = kubernetes_config_map_v1.postgres_backup_script.metadata[0].name
               }
             }
           }

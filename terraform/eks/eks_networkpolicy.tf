@@ -223,7 +223,7 @@ resource "kubernetes_network_policy" "redis" {
 
 resource "kubernetes_network_policy" "postgresql_back" {
   metadata {
-    name      = "postgresql_back"
+    name      = "postgresql-back"
     namespace = "nextcloud"
   }
 
@@ -267,12 +267,12 @@ resource "kubernetes_network_policy" "cronjob_access" {
   spec {
     pod_selector {
         match_labels = {
-          app = "database"
+          app = "database-backup"
       }
     }
 
     policy_types = [
-      "Engress"
+      "Egress"
     ]
     egress {
       to {

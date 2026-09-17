@@ -20,17 +20,4 @@ resource "helm_release" "Karpenter" {
         value = "nextcloud"
     }
 
-    set {
-        name = "settings.interruptionQueue"
-        value = "nextcloud"
-    }
-    set {
-        name = "serviceMonitor.enabled"
-        value = "true"
-    }
-
-    set {
-        name = "serviceMonitor.additionalLabels.release"
-        value = "prometheus"
-    }
 }

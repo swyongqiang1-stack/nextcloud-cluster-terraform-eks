@@ -39,7 +39,7 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
 
 
 resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
+  cluster_name    = var.cluster_name
   namespace       = "kube-system"
   service_account = "aws-load-balancer-controller"
   role_arn        = aws_iam_role.aws_load_balancer_controller.arn

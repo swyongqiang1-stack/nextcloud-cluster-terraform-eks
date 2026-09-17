@@ -11,17 +11,16 @@ resource "kubernetes_config_map_v1" "postgres_backup_config" {
   }
 }
 
-
 resource "kubernetes_config_map_v1" "postgres_backup_script" {
   metadata {
-    name = "postgres-backup-script"
+    name      = "postgres-backup-script"
     namespace = "nextcloud"
   }
 
   data = {
     "backup.sh" = <<-EOT
-      #!/bin/sh
-      set -e
+      #!/bin/bash
+      set -euo pipefail
 
       BACKUP_FILE="nextcloud-$(date +%Y%m%d-%H%M%S).sql.gz"
 
@@ -37,7 +36,6 @@ resource "kubernetes_config_map_v1" "postgres_backup_script" {
 
       echo "Backup completed: $BACKUP_FILE"
     EOT
-
   }
 }
 

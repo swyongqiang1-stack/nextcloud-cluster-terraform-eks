@@ -107,7 +107,7 @@ resource "kubernetes_ingress_v1" "nextcloud" {
   spec {
     ingress_class_name = "nginx"
     rule {
-      host = "erben.cn"
+      host = "www.erben.cn"
       http {
         path {
           path = "/"

@@ -51,7 +51,7 @@ resource "kubernetes_service_account" "external_secrets" {
 
 
 resource "aws_eks_pod_identity_association" "external_secrets" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
+  cluster_name    = var.cluster_name
   namespace       = "external-secrets"
   service_account = "external-secrets-sa"
   role_arn        = aws_iam_role.external_secrets.arn
