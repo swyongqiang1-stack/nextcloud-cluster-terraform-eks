@@ -4,7 +4,10 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart      = "aws-load-balancer-controller"
   version    = "3.5.0"
   namespace = "kube-system"
-
+  depends_on = [ 
+    modules.oidc_iam,
+    aws_eks_cluster.nextcloud
+   ]
   
 
   set {
@@ -23,5 +26,4 @@ resource "helm_release" "aws_load_balancer_controller" {
   }
 }
 
-#警告，先创建 serviceaccount，再跑这个。
-#先去跑 irsa_alb.tf
+
