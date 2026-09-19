@@ -1,6 +1,3 @@
-locals {
-  
-}
 
 resource "kubernetes_network_policy" "default_deny_all" {
   metadata {

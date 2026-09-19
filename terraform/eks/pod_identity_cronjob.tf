@@ -42,15 +42,15 @@ resource "aws_iam_role_policy" "postgres_backup" {
 resource "kubernetes_service_account" "postgres_backup" {
   metadata {
     name      = "postgres-backup"   
-    namespace = "nextcloud"                     
+    namespace = var.nextcloud_namespace                 
   }
 }
 
 
 resource "aws_eks_pod_identity_association" "postgres_backup" {
   cluster_name    = var.cluster_name
-  namespace       = "nextcloud"
-  service_account = "postgres-backup"
+  namespace       = var.nextcloud_namespace     
+  service_account = kubernetes_service_account.postgres_backup.metadata[0].name
   role_arn        = aws_iam_role.postgres_backup.arn
 }
 

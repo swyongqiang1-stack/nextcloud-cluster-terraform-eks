@@ -13,3 +13,4 @@ variable "private_subnet" {
 variable "AZ" {
   type = list(string)
 }
+

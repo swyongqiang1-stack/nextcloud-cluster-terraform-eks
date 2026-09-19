@@ -24,6 +24,7 @@ resource "aws_eks_addon" "ebs_csi" {
   pod_identity_association {
     role_arn        = module.oidc_iam.ebs_role_arn
     service_account = "ebs-csi-controller-sa"
+    
   }
 
   depends_on = [

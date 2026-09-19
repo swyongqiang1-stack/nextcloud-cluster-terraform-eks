@@ -3,7 +3,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   version    = "3.5.0"
-  namespace = "kube-system"
+  namespace = var.kube_system_namespace
   depends_on = [ 
     modules.oidc_iam,
     aws_eks_cluster.nextcloud
@@ -12,7 +12,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name = "clusterName"
-    value = "nextcloud"
+    value = var.cluster_name
   }
 
   set {
@@ -22,7 +22,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
+    value = var.alb_sa
   }
 }
 

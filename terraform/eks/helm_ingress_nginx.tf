@@ -2,7 +2,7 @@ resource "helm_release" "ingress_nginx" {
   name       = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
-  namespace  = "ingress-nginx"
+  namespace  = var.ingress_nginx_namespace
   values = [
     file("${path.module}/../values/ingress_nginx.yaml")
   ]
@@ -19,11 +19,11 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
   wait_for_load_balancer = true
   metadata {
     name = "ingress-nginx-alb"
-    namespace = "ingress-nginx"
+    namespace = var.ingress_nginx_namespace
     annotations = {
     "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
     "alb.ingress.kubernetes.io/target-type" = "ip"
-    "external-dns.alpha.kubernetes.io/hostname" = "www.erben.cn"
+    "external-dns.alpha.kubernetes.io/hostname" = var.domain_name
     "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
       {
         HTTP = 80
@@ -49,7 +49,7 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
           
           backend {
             service {
-              name = "ingress-nginx-controller"
+              name = data.kubernetes_service_v1.ingress_nginx.metadata[0].name
               port {
                 number = 80
               }
@@ -61,6 +61,12 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
   }
 }
 
+
+data "kubernetes_service_v1" "ingress_nginx" {
+  metadata {
+    name = "ingress-nginx-controller"
+  }
+}
 
 resource "kubernetes_ingress_v1" "nextcloud" {
   metadata {

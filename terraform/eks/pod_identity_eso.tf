@@ -45,16 +45,15 @@ resource "aws_iam_role_policy" "external_secrets" {
 resource "kubernetes_service_account" "external_secrets" {
   metadata {
     name      = "external-secrets-sa"   
-    namespace = "external-secrets"                     
+    namespace = var.nextcloud_namespace                  
   }
 }
 
 
 resource "aws_eks_pod_identity_association" "external_secrets" {
   cluster_name    = var.cluster_name
-  namespace       = "external-secrets"
-  service_account = "external-secrets-sa"
+  namespace       = var.nextcloud_namespace   
+  service_account = kubernetes_service_account.external_secrets.metadata[0].name
   role_arn        = aws_iam_role.external_secrets.arn
 }
-
 

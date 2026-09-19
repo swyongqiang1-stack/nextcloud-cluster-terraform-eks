@@ -3,8 +3,8 @@ resource "helm_release" "external_secrets" {
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
   version          = "2.9.0"
-  namespace        = "external-secrets"
-  create_namespace = true
+  namespace        = var.external_secrets_namespace
+  create_namespace = false
 
   set {
     name  = "serviceAccount.create"
@@ -12,7 +12,7 @@ resource "helm_release" "external_secrets" {
   }
   set {
     name = "serviceAccount.name"
-    value = "external-secrets-sa"
+    value = var.eso_sa
   }
   
 }

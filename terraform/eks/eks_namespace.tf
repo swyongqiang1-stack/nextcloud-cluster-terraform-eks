@@ -44,3 +44,14 @@ resource "kubernetes_namespace" "nextcloud" {
     name = "nextcloud"
   }
 }
+
+resource "kubernetes_namespace" "external_secrets" {
+  metadata {
+    labels = {
+      "pod-security.kubernetes.io/enforce" = "privileged"
+      "pod-security.kubernetes.io/warn" = "restricted"
+    }
+
+    name = "external-secrets"
+  }
+}
