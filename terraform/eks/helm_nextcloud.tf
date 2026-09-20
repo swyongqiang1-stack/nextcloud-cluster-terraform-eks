@@ -8,6 +8,6 @@ resource "helm_release" "nextcloud" {
     aws_eks_cluster.nextcloud
   ]
   values = [
-    file("${path.module}/../values/nextcloud.yaml")
+    file("${path.module}/values_nextcloud.yaml")
   ]
 }

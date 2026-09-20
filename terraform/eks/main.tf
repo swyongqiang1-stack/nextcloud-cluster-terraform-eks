@@ -19,9 +19,7 @@ provider "aws" {
   region = "ap-southeast-1"
 }
 
-data "aws_eks_cluster" "nextcloud" {
-  name = local.cluster_name
-}
+
 
 provider "helm" {
   kubernetes {

@@ -4,18 +4,12 @@ resource "helm_release" "ingress_nginx" {
   chart      = "ingress-nginx"
   namespace  = kubernetes_namespace.ingress-nginx.metadata[0].name
   values = [
-    file("${path.module}/../values/ingress_nginx.yaml")
+    file("${path.module}/values_ingress_nginx.yaml")
   ]
   depends_on = [ 
     aws_eks_cluster.nextcloud
   ]
 
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-    }
-    
-    
 }
 
 resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
@@ -70,7 +64,7 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
 resource "kubernetes_ingress_v1" "nextcloud" {
   metadata {
     name = "nextcloud-ingress"
-    namespace = kubernetes_namespace.ingress-nginx.metadata[0].name
+    namespace = kubernetes_namespace.nextcloud.metadata[0].name
     annotations = {
       "nginx.ingress.kubernetes.io/affinity" = "cookie"
       "nginx.ingress.kubernetes.io/enable-cors" = "true"

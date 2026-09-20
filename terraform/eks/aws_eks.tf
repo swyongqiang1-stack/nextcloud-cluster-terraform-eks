@@ -1,5 +1,5 @@
 resource "aws_eks_cluster" "nextcloud" {
-  name = local.cluster_name
+  name = "nextcloud"
 
   access_config {
     authentication_mode = "API"

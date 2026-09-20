@@ -1,6 +1,6 @@
 resource "helm_release" "Karpenter" {
   name             = "karpenter"
-  repository       = "oci://public.ecr.aws/karpenter/karpenter"
+  repository       = "oci://public.ecr.aws/karpenter/"
   chart            = "karpenter"
   version          = "1.14.1"
   namespace        = local.namespace.kube_system_namespace
@@ -17,7 +17,7 @@ resource "helm_release" "Karpenter" {
         value = kubernetes_service_account.karpenter_controller.metadata[0].name
     }
 
-    set {
+    set { 
         name = "settings.clusterName"
         value = local.cluster_name
     }
