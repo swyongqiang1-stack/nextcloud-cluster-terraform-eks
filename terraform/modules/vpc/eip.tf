@@ -14,5 +14,7 @@ resource "aws_nat_gateway" "private" {
     Name = "gw NAT"
   }
 
-  depends_on = [aws_internet_gateway.gw]
+  depends_on = [
+    aws_internet_gateway.gw
+    ]
 }

@@ -27,9 +27,3 @@ data "kubernetes_service_v1" "ingress_nginx" {
 data "aws_eks_cluster" "nextcloud" {
   name = local.cluster_name
 }
-
-data "kubernetes_namespace" "kube_system" {
-  metadata {
-    name = "kube-system"
-  }
-}

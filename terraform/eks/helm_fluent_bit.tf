@@ -7,7 +7,10 @@ resource "helm_release" "fluent_bit" {
   values = [
     file("${path.module}/../values/fluent_bit.yaml")
   ]
-
+  depends_on = [ 
+    aws_eks_cluster.nextcloud
+   ]
+   
   set {
     name  = "serviceAccount.create"
     value = "false"

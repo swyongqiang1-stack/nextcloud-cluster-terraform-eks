@@ -319,13 +319,13 @@ resource "aws_iam_role_policy" "karpenter_controller" {
 resource "kubernetes_service_account" "karpenter_controller" {
   metadata {
     name      = "karpenter-controller"   
-    namespace = var.kube_system_namespace                    
+    namespace = local.namespace.kube_system_namespace
   }
 }
 
 resource "aws_eks_pod_identity_association" "karpenter_controller" {
-  cluster_name    = var.cluster_name
-  namespace       = var.kube_system_namespace   
+  cluster_name    = local.cluster_name
+  namespace       = local.namespace.kube_system_namespace
   service_account = kubernetes_service_account.karpenter_controller.metadata[0].name
   role_arn        = aws_iam_role.karpenter_controller.arn
 }

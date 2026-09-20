@@ -4,7 +4,9 @@ resource "helm_release" "nextcloud" {
   chart      = "nextcloud"
   version    = "9.2.6"
   namespace = local.namespace.nextcloud_namespace
-
+  depends_on = [ 
+    aws_eks_cluster.nextcloud
+  ]
   values = [
     file("${path.module}/../values/nextcloud.yaml")
   ]

@@ -4,7 +4,9 @@ resource "helm_release" "Karpenter" {
   chart            = "karpenter"
   version          = "1.14.1"
   namespace        = local.namespace.kube_system_namespace
-
+  depends_on = [ 
+    aws_eks_cluster.nextcloud
+  ]
     set {
     name  = "serviceAccount.create"
     value = "false"

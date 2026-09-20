@@ -45,7 +45,7 @@ resource "aws_iam_role_policy" "external_secrets" {
 resource "kubernetes_service_account" "external_secrets" {
   metadata {
     name      = "external-secrets-sa"   
-    namespace = var.nextcloud_namespace                  
+    namespace = local.namespace.nextcloud_namespace
   }
 }
 
