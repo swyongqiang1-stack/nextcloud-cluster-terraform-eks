@@ -12,7 +12,7 @@ resource "helm_release" "external_secrets" {
   }
   set {
     name = "serviceAccount.name"
-    value = var.eso_sa
+    value = kubernetes_service_account.external_secrets.metadata[0].name
   }
   
 }

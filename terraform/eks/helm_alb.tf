@@ -22,7 +22,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name = "serviceAccount.name"
-    value = var.alb_sa
+    value = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
   }
 }
 

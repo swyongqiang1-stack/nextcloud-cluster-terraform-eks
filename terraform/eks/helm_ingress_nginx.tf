@@ -2,7 +2,7 @@ resource "helm_release" "ingress_nginx" {
   name       = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
-  namespace  = var.ingress_nginx_namespace
+  namespace  = kubernetes_namespace.ingress-nginx.metadata[0].name
   values = [
     file("${path.module}/../values/ingress_nginx.yaml")
   ]
@@ -19,7 +19,7 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
   wait_for_load_balancer = true
   metadata {
     name = "ingress-nginx-alb"
-    namespace = var.ingress_nginx_namespace
+    namespace = kubernetes_namespace.ingress-nginx.metadata[0].name
     annotations = {
     "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
     "alb.ingress.kubernetes.io/target-type" = "ip"
@@ -62,16 +62,12 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
 }
 
 
-data "kubernetes_service_v1" "ingress_nginx" {
-  metadata {
-    name = "ingress-nginx-controller"
-  }
-}
+
 
 resource "kubernetes_ingress_v1" "nextcloud" {
   metadata {
     name = "nextcloud-ingress"
-    namespace = "nextcloud"
+    namespace = kubernetes_namespace.ingress-nginx.metadata[0].name
     annotations = {
       "nginx.ingress.kubernetes.io/affinity" = "cookie"
       "nginx.ingress.kubernetes.io/enable-cors" = "true"
@@ -90,7 +86,7 @@ resource "kubernetes_ingress_v1" "nextcloud" {
           
           backend {
             service {
-              name = "nextcloud"
+              name = data.kubernetes_service_v1.nextcloud.metadata[0].name
               port {
                 number = 8080
               }

@@ -3,7 +3,7 @@ resource "helm_release" "Karpenter" {
   repository       = "oci://public.ecr.aws/karpenter/karpenter"
   chart            = "karpenter"
   version          = "1.14.1"
-  namespace        = "kube-system"
+  namespace        = local.namespace.kube_system_namespace
 
     set {
     name  = "serviceAccount.create"
@@ -12,12 +12,12 @@ resource "helm_release" "Karpenter" {
 
     set {
         name = "serviceAccount.name"
-        value = "karpenter-controller"
+        value = kubernetes_service_account.karpenter_controller.metadata[0].name
     }
 
     set {
         name = "settings.clusterName"
-        value = "nextcloud"
+        value = local.cluster_name
     }
 
 }

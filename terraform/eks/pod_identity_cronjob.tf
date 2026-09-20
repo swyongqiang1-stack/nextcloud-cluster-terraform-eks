@@ -42,7 +42,7 @@ resource "aws_iam_role_policy" "postgres_backup" {
 resource "kubernetes_service_account" "postgres_backup" {
   metadata {
     name      = "postgres-backup"   
-    namespace = var.nextcloud_namespace                 
+    namespace = local.cluster_name
   }
 }
 

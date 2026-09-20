@@ -20,7 +20,7 @@ provider "aws" {
 }
 
 data "aws_eks_cluster" "nextcloud" {
-  name = aws_eks_cluster.nextcloud.name
+  name = local.cluster_name
 }
 
 provider "helm" {

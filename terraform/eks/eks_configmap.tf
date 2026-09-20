@@ -14,7 +14,7 @@ resource "kubernetes_config_map_v1" "postgres_backup_config" {
 resource "kubernetes_config_map_v1" "postgres_backup_script" {
   metadata {
     name      = "postgres-backup-script"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   data = {

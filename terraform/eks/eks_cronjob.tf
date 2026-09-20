@@ -2,7 +2,7 @@
 resource "kubernetes_cron_job_v1" "backup_database" {
   metadata {
     name      = "backup-database"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
 
   }
 

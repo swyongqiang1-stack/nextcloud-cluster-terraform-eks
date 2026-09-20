@@ -1,14 +1,12 @@
-output "ebs_role_arn" {
-  value = aws_iam_role.nextcloud_ebs.arn
+output "role_arn" {
+  value = {
+    ebs_role_arn = aws_iam_role.nextcloud_ebs.arn
+    efs_role_arn = aws_iam_role.nextcloud_efs.arn
+    karpenter_node_arn = aws_iam_role.karpenter_node.arn
+  }
 }
 
-output "efs_role_arn" {
-  value = aws_iam_role.nextcloud_efs.arn
-}
 
-output "karpenter_node_arn" {
-  value = aws_iam_role.karpenter_node.arn
-}
 
 output "karpenter_controller_sa" {
   value = kubernetes_service_account.karpenter_controller.metadata[0].name

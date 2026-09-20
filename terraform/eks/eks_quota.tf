@@ -3,7 +3,7 @@
 resource "kubernetes_resource_quota" "nextcloud" {
   metadata {
     name = "nextcloud"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
   spec {
     hard = {
@@ -19,7 +19,7 @@ resource "kubernetes_resource_quota" "nextcloud" {
 resource "kubernetes_limit_range" "nextcloud" {
   metadata {
     name = "nextcloud"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
   spec {
     limit {

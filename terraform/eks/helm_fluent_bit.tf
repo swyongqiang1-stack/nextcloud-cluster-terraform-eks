@@ -3,7 +3,7 @@ resource "helm_release" "fluent_bit" {
   repository       = "https://fluent.github.io/helm-charts"
   chart            = "fluent-bit"
   version          = "0.58.1"
-  namespace        = var.nextcloud_namespace
+  namespace        = local.namespace.nextcloud_namespace
   values = [
     file("${path.module}/../values/fluent_bit.yaml")
   ]
@@ -15,7 +15,7 @@ resource "helm_release" "fluent_bit" {
     
   set {
     name = "serviceAccount.name"
-    value = var.fluent_bit_sa
+    value = kubernetes_service_account.fluent_bit.metadata[0].name
   }
 
 }

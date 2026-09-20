@@ -2,7 +2,7 @@
 resource "kubernetes_network_policy" "default_deny_all" {
   metadata {
     name      = "default-deny-all"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
@@ -19,7 +19,7 @@ resource "kubernetes_network_policy" "default_deny_all" {
 resource "kubernetes_network_policy" "allow_dns" {
   metadata {
     name      = "allow-dns"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
@@ -58,7 +58,7 @@ resource "kubernetes_network_policy" "allow_dns" {
 resource "kubernetes_network_policy" "nextcloud" {
   metadata {
     name      = "nextcloud-policy"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
@@ -151,7 +151,7 @@ resource "kubernetes_network_policy" "nextcloud" {
 resource "kubernetes_network_policy" "postgresql" {
   metadata {
     name      = "postgresql"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
     
   }
 
@@ -188,7 +188,7 @@ resource "kubernetes_network_policy" "postgresql" {
 resource "kubernetes_network_policy" "redis" {
   metadata {
     name      = "redis"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
@@ -225,7 +225,7 @@ resource "kubernetes_network_policy" "redis" {
 resource "kubernetes_network_policy" "postgresql_back" {
   metadata {
     name      = "postgresql-back"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
@@ -262,7 +262,7 @@ resource "kubernetes_network_policy" "postgresql_back" {
 resource "kubernetes_network_policy" "cronjob_access" {
   metadata {
     name      = "cronjob"
-    namespace = local.nextcloud_namespace
+    namespace = local.namespace.nextcloud_namespace
   }
 
   spec {

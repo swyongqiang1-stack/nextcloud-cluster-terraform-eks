@@ -1,5 +1,5 @@
 resource "aws_eks_node_group" "nextcloud" {
-  cluster_name    = aws_eks_cluster.nextcloud.name
+  cluster_name    = local.cluster_name
   node_group_name = "nextcloud"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = module.vpc.private_subnet_ids
