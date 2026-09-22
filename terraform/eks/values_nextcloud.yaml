@@ -40,7 +40,8 @@ externalDatabase:
   existingSecret:
     enabled: true
     secretName: postgresql-secret
-    passwordKey: password
+    usernameKey: postgresql-username
+    passwordKey: postgresql-password
 
 
     
@@ -94,7 +95,7 @@ postgresql:
         existingSecret: postgresql-secret
         secretKeys:
           adminPasswordKey: postgresql-adminpassword
-          userPasswordKey: PGPASSWORD
+          userPasswordKey: postgresql-password
 
   primary:
     nodeSelector:

@@ -3,8 +3,8 @@ resource "aws_eks_node_group" "nextcloud" {
   node_group_name = "nextcloud"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = module.vpc.private_subnet_ids
-  disk_size = 50
-  instance_types = ["t3.small"]
+  disk_size       = 50
+  instance_types  = ["t3.small"]
 
   scaling_config {
     desired_size = 1
@@ -16,7 +16,7 @@ resource "aws_eks_node_group" "nextcloud" {
     max_unavailable = 1
   }
 
-   depends_on = [
+  depends_on = [
     aws_iam_role_policy_attachment.node-AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.node-AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.node-AmazonEC2ContainerRegistryReadOnly,

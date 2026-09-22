@@ -2,14 +2,14 @@
 
 resource "kubernetes_resource_quota" "nextcloud" {
   metadata {
-    name = "nextcloud"
+    name      = "nextcloud"
     namespace = local.namespace.nextcloud_namespace
   }
   spec {
     hard = {
-      pods = 20
-      cpu = "20"        
-      memory = "20Gi"  
+      pods   = 100
+      cpu    = "100"
+      memory = "200Gi"
     }
 
   }
@@ -18,7 +18,7 @@ resource "kubernetes_resource_quota" "nextcloud" {
 
 resource "kubernetes_limit_range" "nextcloud" {
   metadata {
-    name = "nextcloud"
+    name      = "nextcloud"
     namespace = local.namespace.nextcloud_namespace
   }
   spec {
@@ -33,10 +33,10 @@ resource "kubernetes_limit_range" "nextcloud" {
     limit {
       type = "Container"
       default = {
-        cpu    = "3000m"
-        memory = "3000Mi"
+        cpu    = "500m"
+        memory = "250Mi"
       }
     }
   }
-    }
+}
 

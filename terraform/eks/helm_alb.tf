@@ -3,20 +3,20 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   version    = "3.5.0"
-  namespace = local.namespace.kube_system_namespace
+  namespace  = local.namespace.kube_system_namespace
 
   set {
-    name = "clusterName"
+    name  = "clusterName"
     value = local.cluster_name
   }
 
   set {
-    name = "serviceAccount.create"
+    name  = "serviceAccount.create"
     value = "false"
   }
 
   set {
-    name = "serviceAccount.name"
+    name  = "serviceAccount.name"
     value = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
   }
 }

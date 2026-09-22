@@ -26,13 +26,10 @@ resource "aws_eks_addon" "ebs_csi" {
     service_account = "ebs-csi-controller-sa"
     
   }
-
   depends_on = [
     aws_eks_addon.pod_identity_agent
   ]
-
 }
-
 
 resource "aws_eks_addon" "efs_csi" {
   cluster_name = local.cluster_name

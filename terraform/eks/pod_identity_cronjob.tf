@@ -41,10 +41,49 @@ resource "aws_iam_role_policy" "postgres_backup" {
 
 resource "kubernetes_service_account" "postgres_backup" {
   metadata {
-    name      = "postgres-backup"   
+    name      = "postgres-backup"
     namespace = local.namespace.nextcloud_namespace
   }
 }
+
+resource "kubernetes_role_v1" "backup_exec" {
+  metadata {
+    name      = "backup-exec"
+    namespace = local.namespace.nextcloud_namespace
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods"]
+    verbs      = ["get", "list"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods/exec"]
+    verbs      = ["get", "create"]
+  }
+}
+
+resource "kubernetes_role_binding_v1" "backup_exec" {
+  metadata {
+    name      = "backup-exec"
+    namespace = local.namespace.nextcloud_namespace
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role_v1.backup_exec.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "postgres-backup"
+    namespace = local.namespace.nextcloud_namespace
+  }
+}
+
 
 
 resource "aws_eks_pod_identity_association" "postgres_backup" {

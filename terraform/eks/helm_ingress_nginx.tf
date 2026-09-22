@@ -6,7 +6,7 @@ resource "helm_release" "ingress_nginx" {
   values = [
     file("${path.module}/values_ingress_nginx.yaml")
   ]
-  depends_on = [ 
+  depends_on = [
     aws_eks_cluster.nextcloud
   ]
 
@@ -15,25 +15,25 @@ resource "helm_release" "ingress_nginx" {
 resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
   wait_for_load_balancer = true
   metadata {
-    name = "ingress-nginx-alb"
+    name      = "ingress-nginx-alb"
     namespace = kubernetes_namespace.ingress-nginx.metadata[0].name
     annotations = {
-    "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
-    "alb.ingress.kubernetes.io/target-type" = "ip"
-    "external-dns.alpha.kubernetes.io/hostname" = local.domain_name
-    "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
-      {
-        HTTP = 80
-      },
-      {
-        HTTPS = 443
-      }
-    ])
+      "alb.ingress.kubernetes.io/scheme"          = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"     = "ip"
+      "external-dns.alpha.kubernetes.io/hostname" = local.domain_name
+      "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
+        {
+          HTTP = 80
+        },
+        {
+          HTTPS = 443
+        }
+      ])
 
-    "alb.ingress.kubernetes.io/certificate-arn" =  local.iam_arn
+      "alb.ingress.kubernetes.io/certificate-arn" = local.iam_arn
 
-    "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-}
+      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
+    }
 
   }
   spec {
@@ -41,9 +41,9 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
     rule {
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
-          
+
           backend {
             service {
               name = data.kubernetes_service_v1.ingress_nginx.metadata[0].name
@@ -63,14 +63,14 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
 
 resource "kubernetes_ingress_v1" "nextcloud" {
   metadata {
-    name = "nextcloud-ingress"
+    name      = "nextcloud-ingress"
     namespace = kubernetes_namespace.nextcloud.metadata[0].name
     annotations = {
-      "nginx.ingress.kubernetes.io/affinity" = "cookie"
-      "nginx.ingress.kubernetes.io/enable-cors" = "true"
+      "nginx.ingress.kubernetes.io/affinity"           = "cookie"
+      "nginx.ingress.kubernetes.io/enable-cors"        = "true"
       "nginx.ingress.kubernetes.io/cors-allow-headers" = "X-Forwarded-For"
 
-      }
+    }
   }
   spec {
     ingress_class_name = "nginx"
@@ -78,9 +78,9 @@ resource "kubernetes_ingress_v1" "nextcloud" {
       host = local.domain_name
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
-          
+
           backend {
             service {
               name = data.kubernetes_service_v1.nextcloud.metadata[0].name

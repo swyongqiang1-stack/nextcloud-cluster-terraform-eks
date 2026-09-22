@@ -31,10 +31,10 @@ resource "aws_iam_role_policy" "fluent_bit" {
       {
         Effect = "Allow"
         Action = [
-        "logs:CreateLogStream",
-        "logs:CreateLogGroup",
-        "logs:PutLogEvents",
-        "logs:PutRetentionPolicy"
+          "logs:CreateLogStream",
+          "logs:CreateLogGroup",
+          "logs:PutLogEvents",
+          "logs:PutRetentionPolicy"
         ]
         Resource = "*"
       }
@@ -49,7 +49,7 @@ resource "aws_iam_role_policy" "fluent_bit" {
 
 resource "kubernetes_service_account" "fluent_bit" {
   metadata {
-    name      = "fluent-bit"   
+    name      = "fluent-bit"
     namespace = local.namespace.nextcloud_namespace
 
   }

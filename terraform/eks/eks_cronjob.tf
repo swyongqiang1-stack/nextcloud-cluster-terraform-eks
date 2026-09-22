@@ -8,7 +8,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
 
   spec {
     schedule           = "0 2 * * *"
-    timezone          = "Asia/Singapore"
+    timezone           = "Asia/Singapore"
     concurrency_policy = "Forbid"
 
     job_template {
@@ -22,7 +22,7 @@ resource "kubernetes_cron_job_v1" "backup_database" {
           metadata {
             labels = {
               app = "database-backup"
-    }
+            }
           }
 
           spec {
@@ -31,23 +31,39 @@ resource "kubernetes_cron_job_v1" "backup_database" {
 
             container {
               name  = "postgres-backup"
-              image = "your-ecr-url/postgres-backup:version-tag"
+              image = local.image
 
               command = [
                 "/bin/bash",
                 "/scripts/backup.sh"
               ]
+              env {
+                name = "POSTGRES_USER"
+                value_from {
+                  secret_key_ref {
+                    name = "postgresql-secret"
+                    key  = "postgresql-username"
+                  }
+                }
+              }
+
+              env {
+                name = "PGPASSWORD"
+                value_from {
+                  secret_key_ref {
+                    name = "postgresql-secret"
+                    key  = "postgresql-password"
+                  }
+                }
+              }
 
               env_from {
-                secret_ref {
-                  name = "postgresql-secret"
-                }
                 config_map_ref {
                   name = "postgres-backup-config"
                 }
               }
               volume_mount {
-                name = "backup-script"
+                name       = "backup-script"
                 mount_path = "/scripts"
               }
             }

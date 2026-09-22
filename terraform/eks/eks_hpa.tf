@@ -1,12 +1,12 @@
 resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
   metadata {
-    name = "nextcloud-hpa"
+    name      = "nextcloud-hpa"
     namespace = local.namespace.nextcloud_namespace
   }
 
   spec {
     min_replicas = 1
-    max_replicas = 20
+    max_replicas = 10
 
     scale_target_ref {
       kind = "Deployment"
@@ -18,12 +18,12 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
       resource {
         name = "cpu"
         target {
-          type  = "Utilization"
+          type                = "Utilization"
           average_utilization = 70
         }
       }
 
-      }
+    }
 
   }
 }

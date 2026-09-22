@@ -89,8 +89,8 @@ resource "kubernetes_network_policy" "nextcloud" {
             "app.kubernetes.io/component" = "controller"
           }
         }
-       }
-       
+      }
+
       ports {
         protocol = "TCP"
         port     = "80"
@@ -152,13 +152,13 @@ resource "kubernetes_network_policy" "postgresql" {
   metadata {
     name      = "postgresql"
     namespace = local.namespace.nextcloud_namespace
-    
+
   }
 
   spec {
     pod_selector {
-        match_labels = {
-          app = "database"
+      match_labels = {
+        app = "database"
       }
     }
 
@@ -193,8 +193,8 @@ resource "kubernetes_network_policy" "redis" {
 
   spec {
     pod_selector {
-        match_labels = {
-          app = "redis"
+      match_labels = {
+        app = "redis"
       }
     }
 
@@ -210,7 +210,7 @@ resource "kubernetes_network_policy" "redis" {
           }
         }
       }
-      
+
       ports {
         protocol = "TCP"
         port     = "6379"
@@ -230,8 +230,8 @@ resource "kubernetes_network_policy" "postgresql_back" {
 
   spec {
     pod_selector {
-        match_labels = {
-          app = "database"
+      match_labels = {
+        app = "database"
       }
     }
 
@@ -247,7 +247,7 @@ resource "kubernetes_network_policy" "postgresql_back" {
           }
         }
       }
-      
+
       ports {
         protocol = "TCP"
         port     = "5432"
@@ -267,8 +267,8 @@ resource "kubernetes_network_policy" "cronjob_access" {
 
   spec {
     pod_selector {
-        match_labels = {
-          app = "database-backup"
+      match_labels = {
+        app = "database-backup"
       }
     }
 
@@ -289,7 +289,7 @@ resource "kubernetes_network_policy" "cronjob_access" {
         port     = "5432"
       }
     }
-    
+
     egress {
       to {
         ip_block {
@@ -304,6 +304,55 @@ resource "kubernetes_network_policy" "cronjob_access" {
       ports {
         protocol = "TCP"
         port     = "443"
+      }
+    }
+  }
+}
+
+
+
+
+
+resource "kubernetes_network_policy" "fluent_bit" {
+  metadata {
+    name      = "fluent-bit"
+    namespace = local.namespace.nextcloud_namespace
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "fluent-bit"
+      }
+    }
+
+    policy_types = [
+      "Ingress"
+    ]
+
+    ingress {
+      from {
+        pod_selector {
+          match_labels = {
+            "app" = "nextcloud"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "2020"
+      }
+    }
+    egress {
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+
+          except = [
+            "169.254.169.254/32"
+          ]
+        }
       }
     }
   }

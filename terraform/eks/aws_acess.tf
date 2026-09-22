@@ -1,6 +1,6 @@
 resource "aws_eks_access_entry" "nextcloud" {
-  cluster_name      = local.cluster_name
-  principal_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform"
+  cluster_name  = local.cluster_name
+  principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform"
 }
 
 resource "aws_eks_access_entry" "karpenter_node" {
@@ -15,6 +15,6 @@ resource "aws_eks_access_policy_association" "nextcloud" {
   principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform"
 
   access_scope {
-    type       = "cluster"
+    type = "cluster"
   }
 }

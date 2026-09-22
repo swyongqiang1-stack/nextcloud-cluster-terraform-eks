@@ -21,18 +21,18 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
   name   = "AWSLoadBalancerControllerIAMPolicy"
-  policy = file("${path.module}/iam_alb_policy.json")   
+  policy = file("${path.module}/iam_alb_policy.json")
 }
 
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
   role       = aws_iam_role.aws_load_balancer_controller.name
-  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn   
+  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
 }
 
 
 resource "kubernetes_service_account" "aws_load_balancer_controller" {
   metadata {
-    name      = "aws-load-balancer-controller"   
+    name      = "aws-load-balancer-controller"
     namespace = local.namespace.kube_system_namespace
   }
 }

@@ -10,7 +10,10 @@ variable "private_subnet" {
   type = list(string)
 }
 
-variable "AZ" {
+variable "az" {
   type = list(string)
 }
 
+variable "az_number" {
+  type = number
+}

@@ -6,12 +6,12 @@ resource "aws_eks_node_group" "database" {
   labels = {
     workload = "database"
   }
-  
-taint {
-  key    = "workload"
-  value  = "database"
-  effect = "NO_SCHEDULE"
-}
+
+  taint {
+    key    = "workload"
+    value  = "database"
+    effect = "NO_SCHEDULE"
+  }
 
 
   scaling_config {

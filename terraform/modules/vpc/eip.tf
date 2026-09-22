@@ -1,12 +1,12 @@
 resource "aws_eip" "lb" {
-  count = 3
-  domain   = "vpc"
+  count  = var.az_number
+  domain = "vpc"
 }
 
 
 
 resource "aws_nat_gateway" "private" {
-  count = 3
+  count         = var.az_number
   allocation_id = aws_eip.lb[count.index].id
   subnet_id     = aws_subnet.public_subnet[count.index].id
 
@@ -16,5 +16,5 @@ resource "aws_nat_gateway" "private" {
 
   depends_on = [
     aws_internet_gateway.gw
-    ]
+  ]
 }
