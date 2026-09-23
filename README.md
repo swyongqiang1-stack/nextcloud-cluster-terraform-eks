@@ -1,83 +1,168 @@
 # Nextcloud on AWS EKS
 
-A hands-on infrastructure project for deploying Nextcloud on AWS EKS with Terraform, Kubernetes, and Helm.
+A personal infrastructure project that brings Nextcloud from a single-server deployment to AWS EKS using Terraform, Kubernetes, and Helm.
 
-The goal is to build a reproducible platform with persistent storage, workload identity, monitoring, and backup recovery.
+The project covers networking, persistent storage, workload identity, ingress, logging, autoscaling, and application backups.
 
-> **Status:** Work in progress. Configuration exists for the main components, but end-to-end deployment and recovery have not yet been validated. This repository is not production-ready.
+> **Status:** Work in progress. The main infrastructure and application configurations are in place, including EFS storage and a maintenance-mode backup script. Integration fixes, end-to-end deployment testing, and recovery validation are still ongoing. This repository is not yet production-ready.
 
-## Target Architecture
+## Architecture
+
+The configured traffic path is:
 
 ```text
 Internet
    |
    v
-AWS ALB
+AWS ALB — HTTPS with ACM
+   |
+   v
+NGINX Ingress Controller
    |
    v
 Nextcloud Service
    |
    v
-Nextcloud Pods ────── EFS (shared application storage)
+Nextcloud Pods
    |
-   +── PostgreSQL ── EBS gp3
+   +── EFS — shared application files and user data
    |
-   +── Redis (cache and file locking)
+   +── PostgreSQL — EBS gp3 persistent storage
+   |
+   +── Redis — cache and transactional file locking
 ```
 
-Supporting services:
+Supporting components:
 
-- **Secrets:** AWS Secrets Manager → External Secrets Operator → Kubernetes Secrets
-- **AWS permissions:** IAM Roles for Service Accounts (IRSA)
-- **Monitoring:** Prometheus and Grafana
-- **Logging:** Fluent Bit → CloudWatch Logs
-- **Database backup:** PostgreSQL dump → S3
-- **Scaling:** HPA for application replicas; Karpenter for node provisioning
+- **Secrets:** AWS Secrets Manager → External Secrets Operator → Kubernetes Secrets.
+- **AWS access:** EKS Pod Identity associates Kubernetes ServiceAccounts with IAM roles.
+- **Kubernetes access:** RBAC grants permissions to controllers and the backup ServiceAccount.
+- **Logging:** Fluent Bit → CloudWatch Logs.
+- **Application scaling:** CPU-based HPA.
+- **Node provisioning:** Karpenter with NodePool and EC2NodeClass manifests.
+- **Backups:** Nextcloud directories and PostgreSQL dumps → Amazon S3.
+- **CI:** Terraform checks and backup image builds through GitHub Actions.
 
-EFS shared storage is planned. The current Nextcloud configuration still uses EBS-backed volumes and requires changes before multi-node replicas can operate correctly.
+Prometheus and Grafana are not currently deployed by the repository.
 
 ## Technology Stack
 
 | Area | Technologies |
 |---|---|
-| Infrastructure | Terraform, AWS VPC, EKS, managed node groups |
-| Application | Helm, Nextcloud, PostgreSQL, Redis |
-| Storage | EBS gp3; planned EFS with EFS CSI |
-| Networking and security | ALB, NetworkPolicy, IAM/IRSA, External Secrets |
-| Operations | Prometheus, Grafana, Fluent Bit, CloudWatch, S3 |
-| Automation | GitHub Actions, HPA, Karpenter |
+| Infrastructure as code | Terraform |
+| AWS networking | VPC, public/private subnets, route tables, Internet Gateway, NAT Gateway, Elastic IP |
+| Cluster and compute | Amazon EKS, EC2, managed node groups, dedicated database node group |
+| Application deployment | Helm, Nextcloud, PostgreSQL, Redis |
+| Persistent storage | EFS, EBS gp3, EFS CSI Driver, EBS CSI Driver, StorageClass, PVC |
+| Ingress and HTTPS | AWS Load Balancer Controller, ALB, NGINX Ingress Controller, ACM |
+| Identity and secrets | IAM, EKS Pod Identity, EKS access entries, AWS Secrets Manager, External Secrets Operator |
+| Scheduling | nodeSelector, taints/tolerations, pod anti-affinity, PriorityClass |
+| Resource and network controls | NetworkPolicy, ResourceQuota, LimitRange |
+| Scaling | HPA, Karpenter |
+| Logging | Fluent Bit, CloudWatch Logs |
+| Backup tooling | Kubernetes CronJob, ConfigMap, kubectl, pg_dump, tar, gzip, AWS CLI, S3 |
+| Image delivery and CI | Docker, Amazon ECR, GitHub Actions, GitHub OIDC |
 
-PostgreSQL runs inside Kubernetes for this project. Dedicated database nodes provide scheduling isolation; they do not by themselves provide database high availability.
+An EKS OIDC provider is also defined, but the configured workload IAM associations primarily use **EKS Pod Identity**, rather than IRSA.
+
+## Storage and Scheduling
+
+Nextcloud is configured with two replicas and required pod anti-affinity to place them on different nodes.
+
+Two EFS-backed `ReadWriteMany` PVCs are configured:
+
+- A main volume for Nextcloud application storage.
+- A separate volume for Nextcloud user data.
+
+PostgreSQL uses EBS gp3 storage. A dedicated database node group, combined with node selectors and taints/tolerations, separates database workloads from general application workloads.
+
+Dedicated nodes provide scheduling isolation; they do not make PostgreSQL highly available. Multi-node application behavior and storage recovery still require runtime testing.
+
+## Backup Design
+
+The backup script is stored in a Kubernetes ConfigMap and executed by a CronJob using a dedicated ServiceAccount.
+
+The current script implements this sequence:
+
+1. Select a running Nextcloud Pod.
+2. Check that Nextcloud is installed and is not already in maintenance mode.
+3. Enable maintenance mode using `occ`.
+4. Archive `config`, `custom_apps`, `themes`, and `data` through `kubectl exec`, then upload the archive to S3.
+5. Export PostgreSQL using `pg_dump`, compress the output, and upload it to the same backup prefix.
+6. Disable maintenance mode.
+7. Write a `COMPLETE` marker after successful execution.
+
+```text
+s3://<backup-bucket>/nextcloud/<backup-id>/
+├── nextcloud-files.tar.gz
+├── database.sql.gz
+└── COMPLETE
+```
+
+The script attempts to disable maintenance mode when an ordinary command fails. It does not automatically stop application replicas or drain existing requests and background jobs. Backup consistency therefore depends on preventing writes during the backup window.
+
+Pod loss or forced termination may require manual recovery. A `COMPLETE` marker indicates successful script execution, not a verified restore.
+
+The backup image URI is still a placeholder and must be replaced with a successfully built image from ECR.
 
 ## Repository Layout
 
 ```text
 .
 ├── terraform/
-│   ├── modules/vpc/       # VPC, subnets, routing and NAT
-│   └── eks/
-│       ├── helm_chart/    # Helm release definitions
-│       ├── oidc_iam/      # Workload identity and IAM policies
-│       ├── values/        # Helm values
-│       └── *.tf           # EKS and Kubernetes resources
-├── k8s/                   # Additional Kubernetes manifests
-├── .github/workflows/     # CI configuration
+│   ├── modules/
+│   │   └── vpc/                 # VPC, subnets, routes and NAT
+│   ├── eks/
+│   │   ├── aws_*.tf             # EKS, node groups, access and S3
+│   │   ├── helm_*.tf            # Helm releases and ingress resources
+│   │   ├── pod_identity_*.tf    # Workload IAM and ServiceAccounts
+│   │   ├── eks_*.tf             # Storage, policies, scaling and backups
+│   │   ├── tf_*.tf              # Variables, locals, data and backend
+│   │   ├── values_*.yaml        # Helm values
+│   │   ├── main.tf              # Providers and VPC module
+│   │   └── oidc.tf              # EKS OIDC provider
+│   └── freamwork.md
+├── k8s/
+│   ├── infrastructure/
+│   │   ├── secretstore.yaml
+│   │   └── karpenter/           # NodePool and EC2NodeClass
+│   └── nextcloud/
+│       └── secret/              # ExternalSecret manifests
+├── images/
+│   └── postgres-backup/         # Backup image Dockerfile
+├── .github/
+│   └── workflows/               # Terraform and image-build CI
 └── README.md
 ```
 
-The Terraform structure is being reorganized. Child directories are not automatically loaded and must be explicitly integrated before deployment.
+The manifests under `k8s/` are separate from the Terraform configuration and require an explicit deployment step after their controllers and CRDs are available.
+
+## CI and Image Delivery
+
+Two GitHub Actions workflows are defined:
+
+| Workflow | Purpose |
+|---|---|
+| Terraform CI | Run formatting checks, initialize providers, validate configuration, and generate a plan |
+| Backup image build | Build the backup image and push it to Amazon ECR |
+
+The image workflow is triggered by changes under `images/postgres-backup/` pushed to `main`. Images are tagged with the triggering Git commit SHA.
+
+After a successful build, the resulting ECR image URI must be configured for the backup CronJob. The current workflows do not automatically apply Terraform or update the CronJob image.
 
 ## Current Progress
 
-| Area | Status |
+| Area | Current state |
 |---|---|
-| VPC, EKS and managed node groups | Configuration written; validation pending |
-| Application, IAM, secrets and ingress | Configuration written; integration fixes required |
-| PostgreSQL persistence and network policies | Corrections and runtime testing required |
-| Monitoring, logging and database backup | Partial implementation; verification pending |
-| EFS shared storage and multi-node Nextcloud | Planned |
-| HPA and Karpenter | Partial implementation |
-| Restore, failure recovery and upgrade testing | Pending |
+| VPC, EKS and node groups | Configuration present; deployment validation pending |
+| Nextcloud, PostgreSQL and Redis | Helm configuration present; integration testing pending |
+| EFS and EBS storage | Resource and CSI configurations present; mounting and persistence tests pending |
+| ALB, NGINX and HTTPS | Ingress configuration present; end-to-end access testing pending |
+| Pod Identity and secrets | IAM associations and secret manifests present; runtime verification pending |
+| Logging | Fluent Bit and CloudWatch configuration present; delivery verification pending |
+| HPA and Karpenter | Scaling configurations present; metrics availability and provisioning tests pending |
+| Backups | Directory and database backup script present; image delivery and execution tests pending |
+| Restore and resilience | Restore, failure recovery, and upgrade/rollback tests pending |
 
 ## Deployment Preparation
 
@@ -88,31 +173,33 @@ Required tools:
 - kubectl
 - Helm
 
-Deployment also requires AWS credentials, a Terraform state backend, network configuration, application secrets, and a domain with an ACM certificate for HTTPS.
+Before deployment:
 
-**The deployment workflow is not yet ready for unattended use.** The intended implementation order is:
+1. Prepare AWS credentials and the S3 Terraform state backend.
+2. Review environment-specific values, including network ranges, account references, domain, and ACM certificate.
+3. Prepare the required Secrets Manager entries.
+4. Prepare the ECR repository and GitHub Actions credentials.
+5. Build the backup image and replace the placeholder image URI.
+6. Resolve outstanding Terraform validation and component integration issues.
 
-1. Provision networking, EKS and storage drivers.
-2. Configure workload identity and secret synchronization.
-3. Validate a single Nextcloud replica with PostgreSQL and Redis.
-4. Configure ALB, HTTPS and network policies.
-5. Verify persistence, backups and restoration.
-6. Add observability, shared storage and autoscaling.
+The deployment workflow is still being validated and should not yet be treated as an unattended installation process.
 
-## Completion Criteria
+## Validation Goals
 
 The project will be considered complete when:
 
-- Infrastructure and applications can be deployed using documented steps.
-- HTTPS access, login, upload and download work.
+- Infrastructure and applications can be deployed through documented, repeatable steps.
+- HTTPS access, login, upload, and download work.
 - Application and database data survive Pod recreation.
-- Required traffic is allowed and unintended traffic is blocked.
-- Logs, metrics and actionable alerts are available.
-- Backups can restore a working Nextcloud instance, including its files and configuration.
-- Multi-node replicas, scaling and controlled failure recovery are tested.
+- Network policies allow required traffic and block unintended access.
+- Workloads can access the required AWS services through Pod Identity.
+- Logs reach CloudWatch.
+- HPA and Karpenter scale workloads and nodes as expected.
+- A backup can restore a working Nextcloud instance, including files, configuration, and database.
+- Multi-node operation, controlled failures, and upgrade/rollback procedures have been tested.
 
 ## Cost and Cleanup
 
-This project provisions chargeable AWS resources, including EKS, EC2, NAT Gateways, load balancers, storage and logging.
+This project creates chargeable AWS resources, including EKS, EC2 instances, NAT Gateways, load balancers, EFS, EBS, S3, and CloudWatch Logs.
 
-Set a budget before deployment. When removing the environment, review retained volumes, EFS data, backups and Terraform state separately; destroying compute resources does not necessarily remove all storage or ongoing charges.
+When removing the environment, review persistent volumes, retained EBS volumes, EFS data, backups, and Terraform state separately. Some resources may remain after workload deletion, while others may be deleted by Terraform. Confirm data retention requirements before cleanup.
