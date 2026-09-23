@@ -34,7 +34,8 @@ resource "aws_eks_addon" "ebs_csi" {
 resource "aws_eks_addon" "efs_csi" {
   cluster_name = local.cluster_name
   addon_name   = "aws-efs-csi-driver"
-    pod_identity_association {
+
+  pod_identity_association {
     role_arn        = aws_iam_role.nextcloud_efs.arn
     service_account = "efs-csi-controller-sa"
   }

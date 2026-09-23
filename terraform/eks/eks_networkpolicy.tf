@@ -327,7 +327,8 @@ resource "kubernetes_network_policy" "fluent_bit" {
     }
 
     policy_types = [
-      "Ingress"
+      "Ingress",
+      "Egress"
     ]
 
     ingress {

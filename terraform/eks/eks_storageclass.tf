@@ -2,7 +2,7 @@ resource "kubernetes_storage_class" "ebs_gp3" {
   metadata {
     name = "ebs-gp3"
   }
-  volume_binding_mode = wait_for_load_balancer
+  volume_binding_mode = "WaitForFirstConsumer"
   storage_provisioner = "ebs.csi.aws.com"
   reclaim_policy      = "Retain"
   parameters = {

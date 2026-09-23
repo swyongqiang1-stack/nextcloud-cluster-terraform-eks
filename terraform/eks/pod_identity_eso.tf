@@ -33,7 +33,11 @@ resource "aws_iam_role_policy" "external_secrets" {
           "secretsmanager:DescribeSecret",
           "secretsmanager:GetSecretValue"
         ]
-        Resource = "*"
+        Resource = [
+          "arn:aws:secretsmanager:your_regions:your_account_id:secret:nextcloud-secret-?",
+          "arn:aws:secretsmanager:your_regions:your_account_id:secret:postgresql-secret-?",
+          "arn:aws:secretsmanager:your_regions:your_account_id:secret:redis-secret-?"
+        ]
       }
     ]
   })

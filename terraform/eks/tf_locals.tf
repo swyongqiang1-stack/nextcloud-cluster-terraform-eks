@@ -16,6 +16,6 @@ locals {
   backup_bucket = "elden-state-bucket"
   backup_resource = "arn:aws:s3:::elden-state-bucket/nextcloud/database_backup/*"
   backup_prefix = "nextcloud/database_backup"
-
+  secret_resource = "arn:aws:s3:::elden-state-bucket"
 }
 
