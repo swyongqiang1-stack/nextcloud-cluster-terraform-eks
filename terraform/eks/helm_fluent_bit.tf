@@ -8,7 +8,8 @@ resource "helm_release" "fluent_bit" {
     file("${path.module}/values_fluent_bit.yaml")
   ]
   depends_on = [
-    aws_eks_cluster.nextcloud
+    aws_eks_cluster.nextcloud,
+    aws_eks_pod_identity_association.fluent_bit
   ]
 
   set {

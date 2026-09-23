@@ -4,7 +4,9 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart      = "aws-load-balancer-controller"
   version    = "3.5.0"
   namespace  = local.namespace.kube_system_namespace
-
+  depends_on = [ 
+    aws_eks_pod_identity_association.aws_load_balancer_controller
+   ]
   set {
     name  = "clusterName"
     value = local.cluster_name

@@ -6,7 +6,8 @@ resource "helm_release" "external_secrets" {
   namespace        = local.namespace.external_secrets_namespace
   create_namespace = false
   depends_on = [
-    aws_eks_cluster.nextcloud
+    aws_eks_cluster.nextcloud,
+    aws_eks_pod_identity_association.external_secrets
   ]
 
   set {
