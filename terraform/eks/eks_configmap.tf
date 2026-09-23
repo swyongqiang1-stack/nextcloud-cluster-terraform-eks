@@ -7,7 +7,8 @@ resource "kubernetes_config_map_v1" "postgres_backup_config" {
   data = {
     POSTGRES_HOST = "nextcloud-postgresql"
     POSTGRES_DB   = "nextcloud"
-    BACKUP_BUCKET = aws_s3_bucket.postgresql_back.bucket
+    BACKUP_BUCKET = local.backup_bucket
+    BACKUP_PREFIX = local.backup_prefix
   }
 }
 
@@ -23,7 +24,7 @@ resource "kubernetes_config_map_v1" "postgres_backup_script" {
 
         NAMESPACE="nextcloud"
         BACKUP_ID="$(date -u +%Y%m%d-%H%M%S)-$HOSTNAME"
-        BACKUP_PATH="s3://$BACKUP_BUCKET/nextcloud/$BACKUP_ID"
+        BACKUP_PATH="s3://$BACKUP_BUCKET/$BACKUP_PREFIX/$BACKUP_ID"
 
         POD=$(kubectl -n "$NAMESPACE" get pods \
           -l app=nextcloud \

@@ -31,7 +31,7 @@ resource "aws_iam_role_policy" "postgres_backup" {
         Action = [
           "s3:PutObject",
         ]
-        Resource = "*"
+        Resource = local.backup_resource
       }
     ]
   })
