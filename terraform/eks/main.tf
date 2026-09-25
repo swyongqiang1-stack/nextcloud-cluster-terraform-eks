@@ -51,7 +51,7 @@ module "vpc" {
   private_subnet = var.private_subnet
   cidr_block     = var.cidr_block
   az             = var.az
-  az_number = var.az_number
+  az_number      = var.az_number
 }
 
 

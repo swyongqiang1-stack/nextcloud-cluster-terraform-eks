@@ -10,8 +10,8 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
 
     scale_target_ref {
       api_version = "apps/v1"
-      kind = "Deployment"
-      name = "nextcloud"
+      kind        = "Deployment"
+      name        = "nextcloud"
     }
 
     metric {

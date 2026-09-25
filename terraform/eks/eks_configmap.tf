@@ -17,8 +17,8 @@ resource "kubernetes_config_map_v1" "postgres_backup_script" {
     name      = "postgres-backup-script"
     namespace = local.namespace.nextcloud_namespace
   }
-    data = {
-      "backup.sh" = <<-EOT
+  data = {
+    "backup.sh" = <<-EOT
         #!/bin/bash
         set -euo pipefail
 
@@ -83,7 +83,7 @@ resource "kubernetes_config_map_v1" "postgres_backup_script" {
 
         echo "backup finished：$BACKUP_PATH"
       EOT
-    }
+  }
 }
 
 

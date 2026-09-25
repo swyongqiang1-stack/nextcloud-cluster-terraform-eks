@@ -53,8 +53,8 @@ resource "kubernetes_storage_class" "nextcloud_efs" {
     provisioningMode = "efs-ap"
     fileSystemId     = aws_efs_file_system.nextcloud_efs.id
     directoryPerms   = "750"
-    uid = "33"
-    gid = "33"
+    uid              = "33"
+    gid              = "33"
   }
 }
 

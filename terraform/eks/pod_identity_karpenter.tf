@@ -330,7 +330,7 @@ resource "aws_eks_pod_identity_association" "karpenter_controller" {
   role_arn        = aws_iam_role.karpenter_controller.arn
   depends_on = [
     aws_eks_addon.pod_identity_agent
-   ]
+  ]
 }
 
 

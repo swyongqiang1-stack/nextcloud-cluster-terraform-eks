@@ -9,14 +9,14 @@ locals {
 
 
 locals {
-  cluster_name = aws_eks_cluster.nextcloud.name
-  domain_name  = "www.erben.cn"
-  iam_arn      = "arn:aws:acm:ap-southeast-1:463884819678:certificate/1880b9bc-3df9-416c-bc43-97e6a8851050"
-  image        = "<你的 ECR 地址>/postgres-backup:<镜像标签>"
-  backup_bucket = "elden-state-bucket"
+  cluster_name    = aws_eks_cluster.nextcloud.name
+  domain_name     = "www.erben.cn"
+  iam_arn         = "arn:aws:acm:ap-southeast-1:463884819678:certificate/1880b9bc-3df9-416c-bc43-97e6a8851050"
+  image           = "<你的 ECR 地址>/postgres-backup:<镜像标签>"
+  backup_bucket   = "elden-state-bucket"
   backup_resource = "arn:aws:s3:::elden-state-bucket/nextcloud/database_backup/*"
-  backup_prefix = "nextcloud/database_backup"
+  backup_prefix   = "nextcloud/database_backup"
   secret_resource = "arn:aws:s3:::elden-state-bucket"
-  repositorie = "swyongqiang1-stack/nextcloud-cluster-terraform-eks"
+  repositorie     = "swyongqiang1-stack/nextcloud-cluster-terraform-eks"
 }
 

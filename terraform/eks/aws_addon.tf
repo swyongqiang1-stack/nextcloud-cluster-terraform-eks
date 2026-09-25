@@ -24,7 +24,7 @@ resource "aws_eks_addon" "ebs_csi" {
   pod_identity_association {
     role_arn        = aws_iam_role.nextcloud_ebs.arn
     service_account = "ebs-csi-controller-sa"
-    
+
   }
   depends_on = [
     aws_eks_addon.pod_identity_agent
