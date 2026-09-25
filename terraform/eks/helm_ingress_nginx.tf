@@ -8,6 +8,7 @@ resource "helm_release" "ingress_nginx" {
   ]
   depends_on = [
     aws_eks_cluster.nextcloud
+    
   ]
 
 }
@@ -21,6 +22,7 @@ resource "kubernetes_ingress_v1" "ingress_nginx_alb" {
       "alb.ingress.kubernetes.io/scheme"          = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"     = "ip"
       "external-dns.alpha.kubernetes.io/hostname" = local.domain_name
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
       "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
         {
           HTTP = 80

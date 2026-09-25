@@ -17,5 +17,6 @@ locals {
   backup_resource = "arn:aws:s3:::elden-state-bucket/nextcloud/database_backup/*"
   backup_prefix = "nextcloud/database_backup"
   secret_resource = "arn:aws:s3:::elden-state-bucket"
+  repositorie = "swyongqiang1-stack/nextcloud-cluster-terraform-eks"
 }
 

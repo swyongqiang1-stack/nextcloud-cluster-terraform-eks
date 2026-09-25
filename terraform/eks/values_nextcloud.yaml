@@ -104,7 +104,8 @@ postgresql:
       app: database
     podLabels:
       app: database
-      
+    networkPolicy:
+      enabled: false
     podAntiAffinityPreset: hard
     priorityClassName: high-priority
 
@@ -134,11 +135,7 @@ redis:
     existingSecretPasswordKey: redis-password
 
   networkPolicy:
-    enabled: true
-    ingressNSMatchLabels:
-      redis: external
-    ingressNSPodMatchLabels:
-      redis-client: true
+    enabled: false
 
   replica:
     podLabels:
@@ -151,5 +148,4 @@ redis:
 
   global:
     storageClass: ebs-gp3
-
 

@@ -9,6 +9,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "nextcloud" {
     max_replicas = 10
 
     scale_target_ref {
+      api_version = "apps/v1"
       kind = "Deployment"
       name = "nextcloud"
     }

@@ -21,7 +21,7 @@ jobs:
           role-to-assume: ${{ secrets.ECR_ROLE }}
           aws-region: ap-southeast-1
 
-      - uses: aws-actions/amazon-ecr-login@2
+      - uses: aws-actions/amazon-ecr-login@v2
 
       - uses: docker/build-push-action@v6
         with:
