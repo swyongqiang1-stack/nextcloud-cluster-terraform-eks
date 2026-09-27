@@ -1,4 +1,4 @@
-resource "kubernetes_namespace" "dev" {
+resource "kubernetes_namespace_v1" "dev" {
   metadata {
     labels = {
       "pod-security.kubernetes.io/enforce" = "privileged"
@@ -9,7 +9,7 @@ resource "kubernetes_namespace" "dev" {
   }
 }
 
-resource "kubernetes_namespace" "prod" {
+resource "kubernetes_namespace_v1" "prod" {
   metadata {
     labels = {
       "pod-security.kubernetes.io/enforce" = "privileged"
@@ -20,7 +20,7 @@ resource "kubernetes_namespace" "prod" {
   }
 }
 
-resource "kubernetes_namespace" "ingress-nginx" {
+resource "kubernetes_namespace_v1" "ingress-nginx" {
   metadata {
     labels = {
       "name"                               = "ingress-nginx"
@@ -34,7 +34,7 @@ resource "kubernetes_namespace" "ingress-nginx" {
 
 
 
-resource "kubernetes_namespace" "nextcloud" {
+resource "kubernetes_namespace_v1" "nextcloud" {
   metadata {
     labels = {
       "pod-security.kubernetes.io/enforce" = "privileged"
@@ -45,7 +45,7 @@ resource "kubernetes_namespace" "nextcloud" {
   }
 }
 
-resource "kubernetes_namespace" "external_secrets" {
+resource "kubernetes_namespace_v1" "external_secrets" {
   metadata {
     labels = {
       "pod-security.kubernetes.io/enforce" = "privileged"
