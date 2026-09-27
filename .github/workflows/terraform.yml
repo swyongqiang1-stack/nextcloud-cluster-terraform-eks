@@ -9,6 +9,8 @@ on:
       - main
     paths:
       - "terraform/**"
+      - "bootstrap/**"
+      - ".github/workflows/terraform.yml"
 
 permissions:
   id-token: write
