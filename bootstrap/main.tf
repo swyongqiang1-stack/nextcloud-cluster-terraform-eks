@@ -40,7 +40,7 @@ resource "aws_iam_role" "github_actions" {
         }
 
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:swyongqiang1-stack/nextcloud-cluster-terraform-eks:*"
+          "token.actions.githubusercontent.com:sub" = "repo:swyongqiang1-stack@281670076/nextcloud-cluster-terraform-eks@1333101011:*"
         }
       }
     }]
