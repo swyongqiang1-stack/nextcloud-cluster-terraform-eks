@@ -31,7 +31,7 @@ data "kubernetes_service_v1" "ingress_nginx" {
 }
 
 data "aws_eks_cluster" "nextcloud" {
-  name = local.cluster_name
+  name = "nextcloud"
 }
 
 
