@@ -20,7 +20,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 resource "aws_iam_role" "github_actions" {
-  name = "github-actions-role"
+  name = "github-actions-terraform"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -40,7 +40,7 @@ resource "aws_iam_role" "github_actions" {
         }
 
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:swyongqiang1-stack@281670076/nextcloud-cluster-terraform-eks@1333101011:*"
+          "token.actions.githubusercontent.com:sub" ="repo:swyongqiang1-stack@281670076/nextcloud-cluster-terraform-eks@1333101011:*"
         }
       }
     }]
