@@ -1,4 +1,4 @@
-resource "kubernetes_storage_class" "ebs_gp3" {
+resource "kubernetes_storage_class_v1" "ebs_gp3" {
   metadata {
     name = "ebs-gp3"
   }
@@ -43,7 +43,7 @@ resource "aws_vpc_security_group_ingress_rule" "nextcloud_efs_allow_access" {
 
 
 
-resource "kubernetes_storage_class" "nextcloud_efs" {
+resource "kubernetes_storage_class_v1" "nextcloud_efs" {
   metadata {
     name = "nextcloud-efs"
   }

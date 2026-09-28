@@ -316,7 +316,7 @@ resource "aws_iam_role_policy" "karpenter_controller" {
 
 
 
-resource "kubernetes_service_account" "karpenter_controller" {
+resource "kubernetes_service_account_v1" "karpenter_controller" {
   metadata {
     name      = "karpenter-controller"
     namespace = local.namespace.kube_system_namespace

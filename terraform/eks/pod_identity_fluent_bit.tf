@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "fluent_bit" {
 
 
 
-resource "kubernetes_service_account" "fluent_bit" {
+resource "kubernetes_service_account_v1" "fluent_bit" {
   metadata {
     name      = "fluent-bit"
     namespace = local.namespace.nextcloud_namespace

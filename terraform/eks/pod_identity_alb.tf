@@ -30,7 +30,7 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
 }
 
 
-resource "kubernetes_service_account" "aws_load_balancer_controller" {
+resource "kubernetes_service_account_v1" "aws_load_balancer_controller" {
   metadata {
     name      = "aws-load-balancer-controller"
     namespace = local.namespace.kube_system_namespace
@@ -41,7 +41,7 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
 resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
   cluster_name    = local.cluster_name
   namespace       = local.namespace.kube_system_namespace
-  service_account = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
+  service_account = kubernetes_service_account_v1.aws_load_balancer_controller.metadata[0].name
   role_arn        = aws_iam_role.aws_load_balancer_controller.arn
   depends_on = [
     aws_iam_role_policy_attachment.aws_load_balancer_controller,

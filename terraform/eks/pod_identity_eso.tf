@@ -46,7 +46,7 @@ resource "aws_iam_role_policy" "external_secrets" {
 
 
 
-resource "kubernetes_service_account" "external_secrets" {
+resource "kubernetes_service_account_v1" "external_secrets" {
   metadata {
     name      = "external-secrets-sa"
     namespace = local.namespace.external_secrets_namespace

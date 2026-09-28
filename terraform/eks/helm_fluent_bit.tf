@@ -19,7 +19,7 @@ resource "helm_release" "fluent_bit" {
 
   set {
     name  = "serviceAccount.name"
-    value = kubernetes_service_account.fluent_bit.metadata[0].name
+    value = kubernetes_service_account_v1.fluent_bit.metadata[0].name
   }
   set {
     name  = "labels.app"

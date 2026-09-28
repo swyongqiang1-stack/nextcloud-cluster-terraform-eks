@@ -1,6 +1,6 @@
 
 
-resource "kubernetes_resource_quota" "nextcloud" {
+resource "kubernetes_resource_quota_v1" "nextcloud" {
   metadata {
     name      = "nextcloud"
     namespace = local.namespace.nextcloud_namespace
@@ -16,7 +16,7 @@ resource "kubernetes_resource_quota" "nextcloud" {
 }
 
 
-resource "kubernetes_limit_range" "nextcloud" {
+resource "kubernetes_limit_range_v1" "nextcloud" {
   metadata {
     name      = "nextcloud"
     namespace = local.namespace.nextcloud_namespace

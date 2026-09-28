@@ -15,7 +15,7 @@ resource "helm_release" "Karpenter" {
 
   set {
     name  = "serviceAccount.name"
-    value = kubernetes_service_account.karpenter_controller.metadata[0].name
+    value = kubernetes_service_account_v1.karpenter_controller.metadata[0].name
   }
 
   set {
