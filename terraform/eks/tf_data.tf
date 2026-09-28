@@ -31,7 +31,10 @@ data "kubernetes_service_v1" "ingress_nginx" {
 }
 
 data "aws_eks_cluster" "nextcloud" {
-  name = "nextcloud"
+  name = aws_eks_cluster.nextcloud.name
+  depends_on = [ 
+    aws_eks_cluster.nextcloud
+   ]
 }
 
 
