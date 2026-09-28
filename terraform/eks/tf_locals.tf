@@ -1,9 +1,9 @@
 locals {
   namespace = {
-    nextcloud_namespace        = kubernetes_namespace.nextcloud.metadata[0].name
-    ingress_nginx_namespace    = kubernetes_namespace.ingress-nginx.metadata[0].name
-    kube_system_namespace      = data.kubernetes_namespace.kube_system.metadata[0].name
-    external_secrets_namespace = kubernetes_namespace.external_secrets.metadata[0].name
+    nextcloud_namespace        = kubernetes_namespace_v1.nextcloud.metadata[0].name
+    ingress_nginx_namespace    = kubernetes_namespace_v1.ingress-nginx.metadata[0].name
+    kube_system_namespace      = data.kubernetes_namespace_v1.kube_system.metadata[0].name
+    external_secrets_namespace = kubernetes_namespace_v1.external_secrets.metadata[0].name
   }
 }
 
